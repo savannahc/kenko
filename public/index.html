@@ -5,33 +5,37 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Gentle Eats">
-<meta name="theme-color" content="#faf8f5">
+<meta name="apple-mobile-web-app-title" content="Kenko">
+<meta name="theme-color" content="#F0F2F5">
 <link rel="manifest" href="/manifest.json">
-<title>Gentle Eats</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Nunito:wght@600;700&display=swap" rel="stylesheet">
+<title>Kenko</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 
 :root{
-  --bg:#faf8f5;
+  --bg:#F0F2F5;
   --card:#fff;
-  --border:#e8e4df;
-  --text:#2d2a26;
-  --text-mid:#6b6560;
-  --text-soft:#9a938b;
-  --accent:#7a8a6a;
-  --accent-light:#eef2ea;
-  --accent-dark:#5a6a4a;
-  --warm:#c4956a;
-  --warm-light:#faf1e8;
-  --rose:#b87a7a;
-  --radius:14px;
+  --border:#E2E6EE;
+  --text:#1A1A1A;
+  --text-mid:#4A5465;
+  --text-soft:#748297;
+  --accent:#FF5924;
+  --accent-light:#FFF0EB;
+  --accent-dark:#E55020;
+  --warm:#FFE926;
+  --warm-light:#FFFCE6;
+  --rose:#FF7DD3;
+  --radius:18px;
+  --shadow:0px 4px 22px rgb(116 130 151 / 14%);
 }
 
-html{font-size:17px;-webkit-text-size-adjust:100%}
+html{font-size:16px;-webkit-text-size-adjust:100%}
 
 body{
-  font-family:'Georgia',serif;
+  font-family:'Inter',-apple-system,system-ui,sans-serif;
   background:var(--bg);
   color:var(--text);
   line-height:1.55;
@@ -49,7 +53,8 @@ header{
 }
 
 header h1{
-  font-size:1.35rem;font-weight:400;letter-spacing:.01em;color:var(--accent);
+  font-size:1.35rem;font-weight:700;letter-spacing:-.02em;color:var(--accent);
+  font-family:'Nunito',-apple-system,system-ui,sans-serif;
 }
 
 .week-nav{display:flex;gap:6px;align-items:center}
@@ -67,7 +72,7 @@ header h1{
 
 .week-label{
   font-size:.72rem;color:var(--text-soft);
-  font-family:-apple-system,system-ui,sans-serif;
+  font-family:inherit;
   min-width:60px;text-align:center;
 }
 
@@ -76,8 +81,8 @@ header h1{
 
 .tab{
   flex:1;padding:10px 0;text-align:center;
-  font-family:inherit;font-size:.78rem;color:var(--text-soft);
-  background:none;border:none;border-bottom:2px solid transparent;
+  font-family:'Nunito',inherit;font-size:.78rem;font-weight:600;color:var(--text-soft);
+  background:none;border:none;border-bottom:3px solid transparent;
   cursor:pointer;transition:all .2s;letter-spacing:.03em;
 }
 
@@ -89,12 +94,13 @@ header h1{
 
 /* Photo capture */
 .capture-area{
-  background:var(--card);border:1px solid var(--border);
+  background:var(--card);border:none;
   border-radius:var(--radius);overflow:hidden;margin-bottom:20px;
+  box-shadow:var(--shadow);
 }
 
 .photo-preview{
-  position:relative;aspect-ratio:4/3;background:#eae7e2;
+  position:relative;aspect-ratio:4/3;background:#E8EBF0;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;overflow:hidden;
 }
@@ -128,9 +134,9 @@ header h1{
 .scale-opts{display:flex;gap:6px;flex:1}
 
 .scale-btn{
-  flex:1;padding:9px 0;border-radius:10px;
+  flex:1;padding:9px 0;border-radius:12px;
   border:1px solid var(--border);background:var(--card);
-  font-family:-apple-system,system-ui,sans-serif;font-size:.82rem;
+  font-family:inherit;font-size:.82rem;
   color:var(--text-mid);cursor:pointer;transition:all .15s;text-align:center;
 }
 
@@ -138,6 +144,7 @@ header h1{
 
 .scale-btn.selected{
   border-color:var(--accent);background:var(--accent-light);color:var(--accent);
+  box-shadow:0 0 2px 1px var(--accent);
 }
 
 .scale-btn.selected .sub{color:var(--accent)}
@@ -148,7 +155,7 @@ header h1{
 
 .voice-row textarea{
   flex:1;font-family:inherit;font-size:.84rem;
-  border:1px solid var(--border);border-radius:10px;
+  border:1px solid var(--border);border-radius:12px;
   padding:10px 13px;resize:none;min-height:42px;max-height:100px;
   line-height:1.4;color:var(--text);background:var(--bg);
 }
@@ -164,7 +171,7 @@ header h1{
 }
 
 .mic-btn.recording{
-  background:#f5e0e0;border-color:var(--rose);color:var(--rose);
+  background:#FFE8F7;border-color:var(--rose);color:var(--rose);
   animation:pulse 1.2s infinite;
 }
 
@@ -173,9 +180,10 @@ header h1{
 /* Save button */
 .save-btn{
   width:calc(100% - 36px);margin:0 18px 18px;padding:14px;
-  border-radius:10px;border:none;background:var(--accent);color:#fff;
-  font-family:inherit;font-size:.9rem;cursor:pointer;
+  border-radius:28px;border:none;background:var(--accent);color:#fff;
+  font-family:'Nunito',inherit;font-size:.9rem;font-weight:600;cursor:pointer;
   letter-spacing:.02em;transition:all .15s;
+  box-shadow:0px 8px 16px rgba(255,89,36,0.2);
 }
 
 .save-btn:active{transform:scale(.98);opacity:.9}
@@ -183,33 +191,34 @@ header h1{
 
 /* Today's meal feed */
 .today-feed h2{
-  font-size:.72rem;font-weight:400;text-transform:uppercase;
+  font-size:.72rem;font-weight:600;text-transform:uppercase;
   letter-spacing:.08em;color:var(--text-soft);margin-bottom:12px;padding:0 4px;
 }
 
 .meal-card{
-  background:var(--card);border:1px solid var(--border);
+  background:var(--card);border:none;
   border-radius:var(--radius);overflow:hidden;margin-bottom:14px;
   animation:slideUp .35s ease;
+  box-shadow:var(--shadow);
 }
 
 @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
-.meal-card-photo{aspect-ratio:4/3;background:#eae7e2;overflow:hidden}
+.meal-card-photo{aspect-ratio:4/3;background:#E8EBF0;overflow:hidden}
 .meal-card-photo img{width:100%;height:100%;object-fit:cover}
 
 .meal-card-info{padding:12px 14px;display:flex;flex-direction:column;gap:5px}
 
 .meal-card-time{
   font-size:.68rem;color:var(--text-soft);
-  font-family:-apple-system,system-ui,sans-serif;
+  font-family:inherit;
 }
 
 .meal-card-note{font-size:.82rem;color:var(--text);line-height:1.45;font-style:italic}
 
 .meal-card-scales{
   display:flex;gap:14px;font-size:.72rem;color:var(--text-mid);
-  font-family:-apple-system,system-ui,sans-serif;
+  font-family:inherit;
 }
 
 .meal-card-scales span{display:flex;align-items:center;gap:4px}
@@ -225,10 +234,10 @@ header h1{
 .day-group{margin-bottom:24px}
 
 .day-header{
-  font-size:.74rem;font-weight:400;color:var(--text-soft);
+  font-size:.74rem;font-weight:600;color:var(--text-soft);
   text-transform:uppercase;letter-spacing:.06em;
   padding:0 4px 10px;
-  font-family:-apple-system,system-ui,sans-serif;
+  font-family:inherit;
 }
 
 .day-grid{
@@ -236,16 +245,17 @@ header h1{
 }
 
 .grid-card{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:12px;overflow:hidden;
+  background:var(--card);border:none;
+  border-radius:var(--radius);overflow:hidden;
+  box-shadow:var(--shadow);
 }
 
-.grid-card-photo{aspect-ratio:1;background:#eae7e2;overflow:hidden}
+.grid-card-photo{aspect-ratio:1;background:#E8EBF0;overflow:hidden}
 .grid-card-photo img{width:100%;height:100%;object-fit:cover}
 
 .grid-card-meta{
   padding:8px 10px;font-size:.66rem;color:var(--text-mid);
-  font-family:-apple-system,system-ui,sans-serif;
+  font-family:inherit;
   display:flex;justify-content:space-between;
 }
 
@@ -271,8 +281,8 @@ header h1{
 }
 
 .setting-item button{
-  font-family:inherit;font-size:.78rem;padding:8px 16px;
-  border-radius:8px;border:1px solid var(--border);
+  font-family:inherit;font-size:.78rem;font-weight:600;padding:8px 16px;
+  border-radius:28px;border:1px solid var(--border);
   background:var(--card);color:var(--text-mid);cursor:pointer;
 }
 
@@ -287,13 +297,14 @@ header h1{
 /* Metrics */
 .period-toggle{
   display:flex;gap:0;
-  background:var(--card);border:1px solid var(--border);
-  border-radius:10px;overflow:hidden;margin-bottom:20px;
+  background:var(--card);border:none;
+  border-radius:30px;overflow:hidden;margin-bottom:20px;
+  box-shadow:var(--shadow);
 }
 
 .period-btn{
   flex:1;padding:9px 0;
-  font-family:-apple-system,system-ui,sans-serif;font-size:.74rem;
+  font-family:inherit;font-size:.74rem;
   color:var(--text-soft);background:none;border:none;
   cursor:pointer;transition:all .15s;letter-spacing:.02em;
 }
@@ -303,14 +314,15 @@ header h1{
 }
 
 .metric-card{
-  background:var(--card);border:1px solid var(--border);
+  background:var(--card);border:none;
   border-radius:var(--radius);padding:20px;margin-bottom:14px;
+  box-shadow:var(--shadow);
 }
 
 .metric-title{
   font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;
   color:var(--text-soft);margin-bottom:14px;
-  font-family:-apple-system,system-ui,sans-serif;
+  font-family:inherit;font-weight:600;
 }
 
 .metric-visual{
@@ -345,12 +357,12 @@ header h1{
 
 .comp-bar-label{
   font-size:.66rem;color:var(--text-soft);text-align:center;
-  font-family:-apple-system,system-ui,sans-serif;
+  font-family:inherit;
 }
 
 .comp-bar-val{
   font-size:.82rem;color:var(--text);font-weight:500;
-  font-family:-apple-system,system-ui,sans-serif;
+  font-family:inherit;
 }
 
 /* Dot row for meals per day */
@@ -362,7 +374,7 @@ header h1{
 
 .dot-day-label{
   font-size:.58rem;color:var(--text-soft);
-  font-family:-apple-system,system-ui,sans-serif;
+  font-family:inherit;
 }
 
 /* Time-of-day zones */
@@ -374,9 +386,9 @@ header h1{
   border-radius:8px;padding:6px 4px;min-height:56px;
 }
 
-.time-zone-morning{background:#f7f4ee}
-.time-zone-afternoon{background:#f2f6ee}
-.time-zone-evening{background:#eef0f6}
+.time-zone-morning{background:#FFF5EB}
+.time-zone-afternoon{background:#EEFBEE}
+.time-zone-evening{background:#EEEDF6}
 
 .time-dots{display:flex;flex-wrap:wrap;gap:3px;justify-content:center}
 
@@ -386,7 +398,7 @@ header h1{
 
 .time-zone-label{
   font-size:.58rem;color:var(--text-soft);margin-top:4px;
-  font-family:-apple-system,system-ui,sans-serif;
+  font-family:inherit;
 }
 
 /* Toast */
@@ -394,13 +406,13 @@ header h1{
   position:fixed;
   bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);
   background:var(--accent);color:#fff;
-  font-family:-apple-system,system-ui,sans-serif;
+  font-family:inherit;font-weight:600;
   font-size:.82rem;letter-spacing:.02em;
-  padding:12px 24px;border-radius:24px;
+  padding:12px 24px;border-radius:28px;
   opacity:0;pointer-events:none;
   transition:all .35s ease;
   z-index:40;
-  box-shadow:0 4px 16px rgba(0,0,0,.12);
+  box-shadow:0px 8px 16px rgba(255,89,36,0.2);
 }
 
 .toast.visible{
@@ -416,23 +428,24 @@ header h1{
 .overlay.visible{display:flex}
 
 .dialog{
-  background:#fff;border-radius:16px;padding:26px 22px;
+  background:#fff;border-radius:20px;padding:26px 22px;
   max-width:300px;width:88%;text-align:center;
+  box-shadow:var(--shadow);
 }
 
 .dialog p{font-size:.88rem;margin-bottom:18px;line-height:1.5;color:var(--text)}
 .dialog-btns{display:flex;gap:10px}
 
 .dialog-btns button{
-  flex:1;font-family:inherit;font-size:.82rem;padding:11px;
-  border-radius:10px;border:1px solid var(--border);cursor:pointer;
+  flex:1;font-family:inherit;font-size:.82rem;font-weight:600;padding:11px;
+  border-radius:28px;border:1px solid var(--border);cursor:pointer;
 }
 
 .dialog-btns .cancel{background:#fff;color:var(--text-soft)}
 .dialog-btns .confirm{background:var(--accent);color:#fff;border-color:var(--accent)}
 
 @media(max-width:360px){
-  html{font-size:15px}
+  html{font-size:14px}
   .day-grid{grid-template-columns:repeat(2,1fr)}
 }
 </style>
@@ -440,7 +453,7 @@ header h1{
 <body>
 <div class="app">
   <header>
-    <h1>Gentle Eats</h1>
+    <h1>Kenko</h1>
     <div class="week-nav" id="weekNav" style="display:none">
       <button id="prevWeek">‹</button>
       <span class="week-label" id="weekLabel"></span>
@@ -544,7 +557,7 @@ header h1{
 /* ══════════════════════════════════════════
    IndexedDB — photos + meals, no camera roll
    ══════════════════════════════════════════ */
-const DB='gentleeats', VER=1;
+const DB='kenko', VER=1;
 let db=null;
 
 function openDB(){
@@ -970,12 +983,12 @@ function renderHungerPercent(withHunger){
   const dashLen=circ*(pct/100);
 
   const svg=`<svg width="76" height="76" viewBox="0 0 76 76">
-    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#e8e4df" stroke-width="${stroke}"/>
-    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#7a8a6a" stroke-width="${stroke}"
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#E2E6EE" stroke-width="${stroke}"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#FF5924" stroke-width="${stroke}"
       stroke-dasharray="${dashLen} ${circ}" stroke-linecap="round"
       transform="rotate(-90 ${cx} ${cy})" style="transition:stroke-dasharray .5s ease"/>
     <text x="${cx}" y="${cy+1}" text-anchor="middle" dominant-baseline="middle"
-      font-family="-apple-system,system-ui,sans-serif" font-size="13" fill="#2d2a26" font-weight="500">${pct}%</text>
+      font-family="-apple-system,system-ui,sans-serif" font-size="13" fill="#1A1A1A" font-weight="500">${pct}%</text>
   </svg>`;
 
   return mCard('Eaten when hungry',
@@ -990,14 +1003,14 @@ function renderAvgSatisfaction(withSat){
   const pct=((avg-1)/2)*100; // 1=0%, 3=100% along the spectrum
 
   const svg=`<svg width="200" height="40" viewBox="0 0 200 40">
-    <line x1="20" y1="20" x2="180" y2="20" stroke="#e8e4df" stroke-width="4" stroke-linecap="round"/>
-    <circle cx="20" cy="20" r="5" fill="${avg<1.3?'#7a8a6a':'#d4e4d4'}" opacity="${avg<1.3?1:.5}"/>
-    <circle cx="100" cy="20" r="5" fill="${avg>=1.3&&avg<2.5?'#7a8a6a':'#d4e4d4'}" opacity="${avg>=1.3&&avg<2.5?1:.5}"/>
-    <circle cx="180" cy="20" r="5" fill="${avg>=2.5?'#7a8a6a':'#d4e4d4'}" opacity="${avg>=2.5?1:.5}"/>
-    <circle cx="${20+pct*1.6}" cy="20" r="8" fill="#7a8a6a" stroke="#fff" stroke-width="2" style="transition:cx .4s ease"/>
-    <text x="20" y="36" text-anchor="middle" font-family="-apple-system,system-ui,sans-serif" font-size="9" fill="#9a938b">meh</text>
-    <text x="100" y="36" text-anchor="middle" font-family="-apple-system,system-ui,sans-serif" font-size="9" fill="#9a938b">good</text>
-    <text x="180" y="36" text-anchor="middle" font-family="-apple-system,system-ui,sans-serif" font-size="9" fill="#9a938b">perfect</text>
+    <line x1="20" y1="20" x2="180" y2="20" stroke="#E2E6EE" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="20" cy="20" r="5" fill="${avg<1.3?'#FF5924':'#FFD4C4'}" opacity="${avg<1.3?1:.5}"/>
+    <circle cx="100" cy="20" r="5" fill="${avg>=1.3&&avg<2.5?'#FF5924':'#FFD4C4'}" opacity="${avg>=1.3&&avg<2.5?1:.5}"/>
+    <circle cx="180" cy="20" r="5" fill="${avg>=2.5?'#FF5924':'#FFD4C4'}" opacity="${avg>=2.5?1:.5}"/>
+    <circle cx="${20+pct*1.6}" cy="20" r="8" fill="#FF5924" stroke="#fff" stroke-width="2" style="transition:cx .4s ease"/>
+    <text x="20" y="36" text-anchor="middle" font-family="-apple-system,system-ui,sans-serif" font-size="9" fill="#748297">meh</text>
+    <text x="100" y="36" text-anchor="middle" font-family="-apple-system,system-ui,sans-serif" font-size="9" fill="#748297">good</text>
+    <text x="180" y="36" text-anchor="middle" font-family="-apple-system,system-ui,sans-serif" font-size="9" fill="#748297">perfect</text>
   </svg>`;
 
   return mCard('Average satisfaction',
@@ -1131,7 +1144,7 @@ document.getElementById('exportBtn').addEventListener('click',async()=>{
   const b=new Blob([csv],{type:'text/csv'});
   const u=URL.createObjectURL(b);
   const a=document.createElement('a');
-  a.href=u;a.download=`gentle-eats-${r.start}.csv`;a.click();
+  a.href=u;a.download=`kenko-${r.start}.csv`;a.click();
   URL.revokeObjectURL(u);
 });
 
