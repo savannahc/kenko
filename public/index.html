@@ -92,37 +92,54 @@ header h1{
 .view{display:none}
 .view.active{display:block}
 
-/* Photo capture */
-.capture-area{
-  background:var(--card);border:none;
-  border-radius:var(--radius);overflow:hidden;margin-bottom:20px;
-  box-shadow:var(--shadow);
+/* FAB add button */
+.fab-add{
+  position:fixed;bottom:28px;right:max(16px,calc((100% - 480px)/2 + 16px));
+  width:56px;height:56px;border-radius:50%;
+  background:var(--accent);color:#fff;border:none;
+  font-size:1.8rem;font-weight:300;line-height:1;
+  cursor:pointer;z-index:30;
+  box-shadow:0 6px 20px rgba(255,89,36,.35);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .15s,opacity .15s;
+}
+.fab-add:active{transform:scale(.92)}
+
+#cameraInput{display:none}
+
+/* Capture panel (slides up from bottom) */
+.capture-panel{
+  position:fixed;inset:0;z-index:35;
+  display:none;flex-direction:column;justify-content:flex-end;
+  background:rgba(0,0,0,.3);
+}
+.capture-panel.active{display:flex}
+
+.capture-panel-inner{
+  background:var(--card);
+  border-radius:20px 20px 0 0;
+  max-width:480px;width:100%;margin:0 auto;
+  max-height:85dvh;overflow-y:auto;
+  animation:panelUp .3s ease;
 }
 
-.photo-preview{
+@keyframes panelUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+.capture-panel .photo-preview{
   position:relative;aspect-ratio:4/3;background:#E8EBF0;
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer;overflow:hidden;
+  overflow:hidden;
 }
 
-.photo-preview img{width:100%;height:100%;object-fit:cover;display:none}
-.photo-placeholder{text-align:center;color:var(--text-soft)}
-.photo-placeholder .cam-icon{font-size:2.4rem;display:block;margin-bottom:8px;opacity:.6}
-.photo-placeholder span{font-size:.78rem;font-style:italic}
-.photo-preview.has-photo .photo-placeholder{display:none}
-.photo-preview.has-photo img{display:block}
+.capture-panel .photo-preview img{width:100%;height:100%;object-fit:cover}
 
 .retake-btn{
   position:absolute;top:10px;right:10px;
   width:32px;height:32px;border-radius:50%;
   background:rgba(0,0,0,.45);border:none;color:#fff;
   font-size:.85rem;cursor:pointer;
-  display:none;align-items:center;justify-content:center;
+  display:flex;align-items:center;justify-content:center;
 }
-
-.photo-preview.has-photo .retake-btn{display:flex}
-
-#cameraInput{display:none}
 
 /* Scales */
 .scales{padding:16px 18px;display:flex;flex-direction:column;gap:14px}
@@ -166,7 +183,7 @@ header h1{
 
 /* Save button */
 .save-btn{
-  width:calc(100% - 36px);margin:0 18px 18px;padding:14px;
+  width:calc(100% - 36px);margin:0 18px 10px;padding:14px;
   border-radius:28px;border:none;background:var(--accent);color:#fff;
   font-family:'Nunito',inherit;font-size:.9rem;font-weight:600;cursor:pointer;
   letter-spacing:.02em;transition:all .15s;
@@ -175,6 +192,16 @@ header h1{
 
 .save-btn:active{transform:scale(.98);opacity:.9}
 .save-btn:disabled{opacity:.35;cursor:default}
+
+/* Cancel button */
+.cancel-edit-btn{
+  width:calc(100% - 36px);margin:0 18px 18px;padding:12px;
+  border-radius:28px;border:1px solid var(--border);
+  background:var(--card);color:var(--text-soft);
+  font-family:'Nunito',inherit;font-size:.82rem;font-weight:600;
+  cursor:pointer;text-align:center;transition:all .15s;
+}
+.cancel-edit-btn:active{background:var(--accent-light)}
 
 /* Today's meal feed */
 .today-feed h2{
@@ -187,7 +214,10 @@ header h1{
   border-radius:var(--radius);overflow:hidden;margin-bottom:14px;
   animation:slideUp .35s ease;
   box-shadow:var(--shadow);
+  cursor:pointer;transition:box-shadow .15s;
 }
+.meal-card:active{box-shadow:0 0 0 2px var(--accent)}
+.meal-card.editing{box-shadow:0 0 0 2px var(--accent)}
 
 @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
@@ -457,44 +487,43 @@ header h1{
 
   <!-- TODAY -->
   <div class="view active" id="todayView">
-    <div class="capture-area">
-      <div class="photo-preview" id="photoPreview">
-        <div class="photo-placeholder">
-          <span class="cam-icon">📷</span>
-          <span>Tap to snap your meal</span>
-        </div>
-        <img id="previewImg" alt="Meal photo">
-        <button class="retake-btn" id="retakeBtn">✕</button>
-      </div>
-      <input type="file" id="cameraInput" accept="image/*">
-
-      <div class="scales">
-        <div class="scale-row">
-          <div class="scale-label">Hungry?</div>
-          <div class="scale-opts" data-scale="hunger">
-            <button class="scale-btn" data-val="1">1<span class="sub">not really</span></button>
-            <button class="scale-btn" data-val="2">2<span class="sub">somewhat</span></button>
-            <button class="scale-btn" data-val="3">3<span class="sub">starving</span></button>
-          </div>
-        </div>
-        <div class="scale-row">
-          <div class="scale-label">Satisfied?</div>
-          <div class="scale-opts" data-scale="satisfaction">
-            <button class="scale-btn" data-val="1">1<span class="sub">meh</span></button>
-            <button class="scale-btn" data-val="2">2<span class="sub">good</span></button>
-            <button class="scale-btn" data-val="3">3<span class="sub">perfect</span></button>
-          </div>
-        </div>
-      </div>
-
-      <div class="voice-row">
-        <textarea id="noteInput" rows="1" placeholder="Optional note…"></textarea>
-      </div>
-
-      <button class="save-btn" id="saveBtn">Save Meal</button>
-    </div>
+    <input type="file" id="cameraInput" accept="image/*" capture="environment">
+    <button class="fab-add" id="addMealBtn">+</button>
 
     <div class="today-feed" id="todayFeed"></div>
+
+    <!-- Capture / edit panel -->
+    <div class="capture-panel" id="capturePanel">
+      <div class="capture-panel-inner">
+        <div class="photo-preview" id="photoPreview">
+          <img id="previewImg" alt="Meal photo">
+          <button class="retake-btn" id="retakeBtn">✕</button>
+        </div>
+        <div class="scales">
+          <div class="scale-row">
+            <div class="scale-label">Hungry?</div>
+            <div class="scale-opts" data-scale="hunger">
+              <button class="scale-btn" data-val="1">1<span class="sub">not really</span></button>
+              <button class="scale-btn" data-val="2">2<span class="sub">somewhat</span></button>
+              <button class="scale-btn" data-val="3">3<span class="sub">starving</span></button>
+            </div>
+          </div>
+          <div class="scale-row">
+            <div class="scale-label">Satisfied?</div>
+            <div class="scale-opts" data-scale="satisfaction">
+              <button class="scale-btn" data-val="1">1<span class="sub">meh</span></button>
+              <button class="scale-btn" data-val="2">2<span class="sub">good</span></button>
+              <button class="scale-btn" data-val="3">3<span class="sub">perfect</span></button>
+            </div>
+          </div>
+        </div>
+        <div class="voice-row">
+          <textarea id="noteInput" rows="1" placeholder="Optional note…"></textarea>
+        </div>
+        <button class="save-btn" id="saveBtn">Save Meal</button>
+        <button class="cancel-edit-btn" id="cancelEditBtn">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <!-- WEEK -->
@@ -586,10 +615,28 @@ function dbClear(){
   });
 }
 
+function dbPut(meal){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction('meals','readwrite');
+    tx.objectStore('meals').put(meal).onsuccess=e=>res(e.target.result);
+    tx.onerror=e=>rej(e);
+  });
+}
+
+function dbGet(id){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction('meals','readonly');
+    const req=tx.objectStore('meals').get(id);
+    req.onsuccess=()=>res(req.result);
+    req.onerror=e=>rej(e);
+  });
+}
+
 /* ══════════════════════════════════════════
    Helpers
    ══════════════════════════════════════════ */
-const today=()=>new Date().toISOString().slice(0,10);
+const localDateStr=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const today=()=>localDateStr(new Date());
 const fmtTime=iso=>new Date(iso).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
 const esc=s=>{const d=document.createElement('div');d.textContent=s;return d.innerHTML};
 
@@ -597,7 +644,7 @@ function fmtDayLabel(ds){
   const d=new Date(ds+'T12:00:00'), t=today();
   const y=new Date();y.setDate(y.getDate()-1);
   if(ds===t) return 'Today';
-  if(ds===y.toISOString().slice(0,10)) return 'Yesterday';
+  if(ds===localDateStr(y)) return 'Yesterday';
   return d.toLocaleDateString([],{weekday:'long',month:'short',day:'numeric'});
 }
 
@@ -608,8 +655,8 @@ function weekRange(off){
   mon.setHours(0,0,0,0);
   const sun=new Date(mon);sun.setDate(mon.getDate()+6);
   return{
-    start:mon.toISOString().slice(0,10),
-    end:sun.toISOString().slice(0,10),
+    start:localDateStr(mon),
+    end:localDateStr(sun),
     label:mon.toLocaleDateString([],{month:'short',day:'numeric'})+' – '+
           sun.toLocaleDateString([],{month:'short',day:'numeric'})
   };
@@ -622,23 +669,29 @@ const sLabels={1:'meh',2:'good',3:'perfect'};
    Photo capture — stays in IndexedDB only
    ══════════════════════════════════════════ */
 let photoB64=null;
+let editingMeal=null;
 const camIn=document.getElementById('cameraInput');
 const preview=document.getElementById('photoPreview');
 const prevImg=document.getElementById('previewImg');
+const capturePanel=document.getElementById('capturePanel');
 
-preview.addEventListener('click',e=>{
-  if(e.target.closest('.retake-btn'))return;
-  if(!preview.classList.contains('has-photo')) camIn.click();
+/* FAB → open camera */
+document.getElementById('addMealBtn').addEventListener('click',()=>{
+  camIn.click();
 });
 
+/* Retake photo */
 document.getElementById('retakeBtn').addEventListener('click',()=>{
   photoB64=null;
-  preview.classList.remove('has-photo');
   prevImg.src='';
   camIn.value='';
+  camIn.click();
 });
 
 /* Read file directly as base64, then compress via canvas */
+function showPanel(){capturePanel.classList.add('active')}
+function hidePanel(){capturePanel.classList.remove('active')}
+
 camIn.addEventListener('change',e=>{
   const f=e.target.files[0];
   if(!f)return;
@@ -658,19 +711,19 @@ camIn.addEventListener('change',e=>{
         /* Use toDataURL — works reliably on iOS Safari unlike toBlob */
         photoB64=c.toDataURL('image/jpeg',0.7);
         prevImg.src=photoB64;
-        preview.classList.add('has-photo');
+        showPanel();
       }catch(err){
         /* Fallback: use original file as-is */
         photoB64=ev.target.result;
         prevImg.src=photoB64;
-        preview.classList.add('has-photo');
+        showPanel();
       }
     };
     img.onerror=function(){
       /* If Image() fails, use raw base64 */
       photoB64=ev.target.result;
       prevImg.src=photoB64;
-      preview.classList.add('has-photo');
+      showPanel();
     };
     img.src=ev.target.result;
   };
@@ -714,31 +767,86 @@ function showToast(msg){
 }
 
 /* ══════════════════════════════════════════
+   Edit helpers
+   ══════════════════════════════════════════ */
+function resetForm(){
+  photoB64=null;
+  prevImg.src='';camIn.value='';
+  noteIn.value='';autoR(noteIn);
+  hunger=null;satisfaction=null;
+  document.querySelectorAll('.scale-btn').forEach(b=>b.classList.remove('selected'));
+  editingMeal=null;
+  document.getElementById('saveBtn').textContent='Save Meal';
+}
+
+function cancelEdit(){
+  resetForm();
+  hidePanel();
+}
+
+function startEdit(meal){
+  editingMeal=meal;
+  // Photo
+  if(meal.photo){
+    photoB64=meal.photo;
+    prevImg.src=meal.photo;
+  }else{
+    photoB64=null;
+    prevImg.src='';
+    camIn.value='';
+  }
+  // Hunger
+  hunger=meal.hunger;
+  document.querySelectorAll('[data-scale="hunger"] .scale-btn').forEach(b=>{
+    b.classList.toggle('selected',hunger!==null&&+b.dataset.val===hunger);
+  });
+  // Satisfaction
+  satisfaction=meal.satisfaction;
+  document.querySelectorAll('[data-scale="satisfaction"] .scale-btn').forEach(b=>{
+    b.classList.toggle('selected',satisfaction!==null&&+b.dataset.val===satisfaction);
+  });
+  // Note
+  noteIn.value=meal.note||'';
+  autoR(noteIn);
+  // UI
+  document.getElementById('saveBtn').textContent='Update Meal';
+  showPanel();
+}
+
+/* Cancel button */
+document.getElementById('cancelEditBtn').addEventListener('click',cancelEdit);
+
+/* ══════════════════════════════════════════
    Save meal
    ══════════════════════════════════════════ */
 document.getElementById('saveBtn').addEventListener('click',async()=>{
   /* Allow save if ANY input was given: photo, scale, or note */
   if(!photoB64&&!noteIn.value.trim()&&hunger===null&&satisfaction===null)return;
 
-  const meal={
-    date:today(),
-    time:new Date().toISOString(),
-    photo:photoB64||null,
-    hunger,satisfaction,
-    note:noteIn.value.trim()||null
-  };
+  if(editingMeal){
+    const meal={
+      id:editingMeal.id,
+      date:editingMeal.date,
+      time:editingMeal.time,
+      photo:photoB64||null,
+      hunger,satisfaction,
+      note:noteIn.value.trim()||null
+    };
+    try{ await dbPut(meal) }catch(err){ console.error('Update failed',err);return }
+    showToast('Meal updated ✓');
+  }else{
+    const meal={
+      date:today(),
+      time:new Date().toISOString(),
+      photo:photoB64||null,
+      hunger,satisfaction,
+      note:noteIn.value.trim()||null
+    };
+    try{ await dbAdd(meal) }catch(err){ console.error('Save failed',err);return }
+    showToast('Meal logged ✓');
+  }
 
-  try{ await dbAdd(meal) }catch(err){ console.error('Save failed',err);return }
-
-  // Reset form
-  photoB64=null;
-  preview.classList.remove('has-photo');
-  prevImg.src='';camIn.value='';
-  noteIn.value='';autoR(noteIn);
-  hunger=null;satisfaction=null;
-  document.querySelectorAll('.scale-btn').forEach(b=>b.classList.remove('selected'));
-
-  showToast('Meal logged ✓');
+  cancelEdit();
   renderToday();
 });
 
@@ -751,9 +859,9 @@ async function renderToday(){
   const todayMeals=await dbRange(todayDate,todayDate);
   // Get last 6 days before today for recent section
   const recentStart=new Date();recentStart.setDate(recentStart.getDate()-6);
-  const recentStartStr=recentStart.toISOString().slice(0,10);
+  const recentStartStr=localDateStr(recentStart);
   const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
-  const yesterdayStr=yesterday.toISOString().slice(0,10);
+  const yesterdayStr=localDateStr(yesterday);
   const recentMeals=await dbRange(recentStartStr,yesterdayStr);
 
   const feed=document.getElementById('todayFeed');
@@ -793,7 +901,7 @@ function renderMealCard(m){
   const st=m.satisfaction?`✦ ${sLabels[m.satisfaction]}`:'';
 
   if(m.photo){
-    return`<div class="meal-card">
+    return`<div class="meal-card" data-meal-id="${m.id}">
       <div class="meal-card-photo"><img src="${m.photo}" alt="" loading="lazy"></div>
       <div class="meal-card-info">
         <div class="meal-card-time">${time}</div>
@@ -802,12 +910,21 @@ function renderMealCard(m){
       </div>
     </div>`;
   }
-  return`<div class="meal-card no-photo-card"><div class="meal-card-info">
+  return`<div class="meal-card no-photo-card" data-meal-id="${m.id}"><div class="meal-card-info">
     <div class="meal-card-time">${time}</div>
     ${m.note?`<div class="meal-card-note">${esc(m.note)}</div>`:''}
     <div class="meal-card-scales">${ht?`<span>${ht}</span>`:''}${st?`<span>${st}</span>`:''}</div>
   </div></div>`;
 }
+
+/* Tap meal card to edit */
+document.getElementById('todayFeed').addEventListener('click',async(e)=>{
+  const card=e.target.closest('.meal-card[data-meal-id]');
+  if(!card)return;
+  const id=+card.dataset.mealId;
+  const meal=await dbGet(id);
+  if(meal) startEdit(meal);
+});
 
 /* ══════════════════════════════════════════
    Render week
@@ -858,6 +975,8 @@ document.getElementById('nextWeek').addEventListener('click',()=>{if(wOff<0){wOf
    ══════════════════════════════════════════ */
 document.querySelectorAll('.tab').forEach(tab=>{
   tab.addEventListener('click',()=>{
+    if(editingMeal) cancelEdit();
+    if(capturePanel.classList.contains('active')) hidePanel();
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
     tab.classList.add('active');
@@ -894,7 +1013,7 @@ document.querySelectorAll('.period-btn').forEach(btn=>{
 
 function dateNDaysAgo(n){
   const d=new Date();d.setDate(d.getDate()-(n-1));
-  return d.toISOString().slice(0,10);
+  return localDateStr(d);
 }
 
 async function renderMetrics(){
@@ -1020,7 +1139,7 @@ function renderMealsPerDay(meals,periodDays){
   const days=[];
   for(let i=showDays-1;i>=0;i--){
     const d=new Date();d.setDate(d.getDate()-i);
-    const ds=d.toISOString().slice(0,10);
+    const ds=localDateStr(d);
     const dayLabel=d.toLocaleDateString([],{weekday:'narrow'});
     const count=meals.filter(m=>m.date===ds).length;
     days.push({ds,dayLabel,count});
