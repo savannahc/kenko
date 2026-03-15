@@ -44,7 +44,7 @@ body{
   padding-bottom:env(safe-area-inset-bottom,20px);
 }
 
-.app{max-width:480px;margin:0 auto;padding:0 16px;background:#fff;border-radius:0 0 24px 24px;padding-bottom:80px}
+.app{max-width:480px;margin:0 auto;padding:0 16px;background:var(--bg);padding-bottom:80px}
 
 /* Header */
 header{
@@ -133,6 +133,15 @@ header h1{
   backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
 }
 
+.delete-btn{
+  position:absolute;top:10px;left:10px;
+  min-width:48px;min-height:48px;padding:8px 16px;border-radius:24px;
+  background:rgba(0,0,0,.5);border:none;color:#fff;
+  font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
+
 /* Scales */
 .scales{padding:16px 18px;display:flex;flex-direction:column;gap:14px}
 
@@ -159,19 +168,6 @@ header h1{
 .scale-btn.selected .sub{color:var(--accent)}
 .scale-btn:active{transform:scale(.96)}
 
-/* Note row */
-.note-row{display:flex;gap:8px;padding:0 18px 16px;align-items:flex-end}
-
-.note-row textarea{
-  flex:1;font-family:inherit;font-size:.84rem;
-  border:1px solid var(--border);border-radius:12px;
-  padding:10px 13px;resize:none;min-height:42px;max-height:100px;
-  line-height:1.4;color:var(--text);background:var(--bg);
-}
-
-.note-row textarea:focus{outline:none;border-color:var(--accent)}
-.note-row textarea::placeholder{color:var(--text-soft);font-style:italic}
-
 
 /* Save button */
 .save-btn{
@@ -188,7 +184,7 @@ header h1{
 
 /* Hunger summary card */
 .hunger-summary{
-  background:var(--bg);border-radius:var(--radius);
+  background:#fff;border-radius:var(--radius);
   padding:16px 20px;margin-bottom:20px;
   display:flex;align-items:center;justify-content:space-between;
 }
@@ -212,7 +208,7 @@ header h1{
 }
 
 .meal-card{
-  background:var(--bg);border:none;
+  background:#fff;border:none;
   border-radius:var(--radius);overflow:hidden;
   animation:slideUp .35s ease;
   cursor:pointer;transition:box-shadow .15s;
@@ -232,7 +228,6 @@ header h1{
   font-family:inherit;
 }
 
-.meal-card-note{font-size:.82rem;color:var(--text);line-height:1.45;font-style:italic}
 
 .meal-card-scales{
   display:flex;gap:14px;font-size:.72rem;color:var(--text-mid);
@@ -470,6 +465,7 @@ header h1{
       <div class="capture-panel-inner">
         <div class="photo-preview" id="photoPreview">
           <img id="previewImg" alt="Meal photo">
+          <button class="delete-btn" id="deleteBtn"><img src="delete.svg" class="icon icon-white" style="width:14px;height:14px;margin-right:4px">Delete</button>
           <button class="retake-btn" id="retakeBtn"><img src="camera.svg" class="icon icon-white" style="width:14px;height:14px;margin-right:4px">Retake</button>
         </div>
         <div class="scales">
@@ -489,9 +485,6 @@ header h1{
               <button class="scale-btn" data-val="3">3<span class="sub">perfect</span></button>
             </div>
           </div>
-        </div>
-        <div class="note-row">
-          <textarea id="noteInput" rows="1" placeholder="Optional note…"></textarea>
         </div>
         <button class="save-btn" id="saveBtn"><img src="tick.svg" class="icon icon-white" style="width:14px;height:14px;margin-right:5px">Save Meal</button>
       </div>
@@ -600,6 +593,14 @@ function dbGet(id){
   });
 }
 
+function dbDelete(id){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction('meals','readwrite');
+    tx.objectStore('meals').delete(id).onsuccess=()=>res();
+    tx.onerror=e=>rej(e);
+  });
+}
+
 /* ══════════════════════════════════════════
    Helpers
    ══════════════════════════════════════════ */
@@ -661,6 +662,16 @@ document.getElementById('retakeBtn').addEventListener('click',()=>{
   camIn.value='';
   hidePanel();
   setTimeout(()=>camIn.click(),350);
+});
+
+/* Delete meal */
+document.getElementById('deleteBtn').addEventListener('click',async()=>{
+  if(!editingMeal)return;
+  const id=editingMeal.id;
+  try{ await dbDelete(id) }catch(err){ console.error('Delete failed',err);return }
+  showToast('Meal deleted','delete.svg');
+  cancelEdit();
+  renderToday();
 });
 
 /* Panel show/hide with FAB state */
@@ -731,9 +742,6 @@ document.querySelectorAll('.scale-opts').forEach(g=>{
   });
 });
 
-const noteIn=document.getElementById('noteInput');
-function autoR(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px'}
-noteIn.addEventListener('input',()=>autoR(noteIn));
 
 /* ══════════════════════════════════════════
    Toast
@@ -753,11 +761,11 @@ function showToast(msg,iconSrc){
 function resetForm(){
   photoB64=null;
   prevImg.src='';camIn.value='';
-  noteIn.value='';autoR(noteIn);
   hunger=null;satisfaction=null;
   document.querySelectorAll('.scale-btn').forEach(b=>b.classList.remove('selected'));
   editingMeal=null;
   document.getElementById('saveBtn').innerHTML='<img src="tick.svg" class="icon icon-white" style="width:14px;height:14px;margin-right:5px">Save Meal';
+  document.getElementById('deleteBtn').style.display='none';
 }
 
 function cancelEdit(){
@@ -786,11 +794,9 @@ function startEdit(meal){
   document.querySelectorAll('[data-scale="satisfaction"] .scale-btn').forEach(b=>{
     b.classList.toggle('selected',satisfaction!==null&&+b.dataset.val===satisfaction);
   });
-  // Note
-  noteIn.value=meal.note||'';
-  autoR(noteIn);
   // UI
   document.getElementById('saveBtn').innerHTML='<img src="tick.svg" class="icon icon-white" style="width:14px;height:14px;margin-right:5px">Update Meal';
+  document.getElementById('deleteBtn').style.display='flex';
   showPanel();
 }
 
@@ -799,8 +805,8 @@ function startEdit(meal){
    Save meal
    ══════════════════════════════════════════ */
 document.getElementById('saveBtn').addEventListener('click',async()=>{
-  /* Allow save if ANY input was given: photo, scale, or note */
-  if(!photoB64&&!noteIn.value.trim()&&hunger===null&&satisfaction===null)return;
+  /* Allow save if ANY input was given: photo or scale */
+  if(!photoB64&&hunger===null&&satisfaction===null)return;
 
   if(editingMeal){
     const meal={
@@ -808,8 +814,7 @@ document.getElementById('saveBtn').addEventListener('click',async()=>{
       date:editingMeal.date,
       time:editingMeal.time,
       photo:photoB64||null,
-      hunger,satisfaction,
-      note:noteIn.value.trim()||null
+      hunger,satisfaction
     };
     try{ await dbPut(meal) }catch(err){ console.error('Update failed',err);return }
     showToast('Meal updated','tick.svg');
@@ -818,8 +823,7 @@ document.getElementById('saveBtn').addEventListener('click',async()=>{
       date:today(),
       time:new Date().toISOString(),
       photo:photoB64||null,
-      hunger,satisfaction,
-      note:noteIn.value.trim()||null
+      hunger,satisfaction
     };
     try{ await dbAdd(meal) }catch(err){ console.error('Save failed',err);return }
     showToast('Meal logged','tick.svg');
@@ -899,15 +903,13 @@ function renderMealCard(m){
       <div class="meal-card-photo"><img src="${m.photo}" alt="" loading="lazy"></div>
       <div class="meal-card-info">
         <div class="meal-card-time">${time}</div>
-        ${m.note?`<div class="meal-card-note">${esc(m.note)}</div>`:''}
-        <div class="meal-card-scales">${ht?`<span>${ht}</span>`:''}${st?`<span>${st}</span>`:''}</div>
+                <div class="meal-card-scales">${ht?`<span>${ht}</span>`:''}${st?`<span>${st}</span>`:''}</div>
       </div>
     </div>`;
   }
   return`<div class="meal-card no-photo-card" data-meal-id="${m.id}"><div class="meal-card-info">
     <div class="meal-card-time">${time}</div>
-    ${m.note?`<div class="meal-card-note">${esc(m.note)}</div>`:''}
-    <div class="meal-card-scales">${ht?`<span>${ht}</span>`:''}${st?`<span>${st}</span>`:''}</div>
+        <div class="meal-card-scales">${ht?`<span>${ht}</span>`:''}${st?`<span>${st}</span>`:''}</div>
   </div></div>`;
 }
 
@@ -1164,8 +1166,8 @@ document.getElementById('exportBtn').addEventListener('click',async()=>{
   const r=weekRange(0);
   const meals=await dbRange(r.start,r.end);
   if(!meals.length){showDialog('Nothing to export this week.',null);return}
-  const rows=[['Date','Time','Hunger (1-3)','Satisfaction (1-3)','Note']];
-  meals.forEach(m=>rows.push([m.date,fmtTime(m.time),m.hunger||'',m.satisfaction||'',m.note||'']));
+  const rows=[['Date','Time','Hunger (1-3)','Satisfaction (1-3)']];
+  meals.forEach(m=>rows.push([m.date,fmtTime(m.time),m.hunger||'',m.satisfaction||'']));
   const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const b=new Blob([csv],{type:'text/csv'});
   const u=URL.createObjectURL(b);
