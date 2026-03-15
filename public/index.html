@@ -988,7 +988,7 @@ async function renderWeek(){
   const dates=Object.keys(grouped).sort().reverse();
 
   wv.innerHTML=dates.map(date=>{
-    const dm=grouped[date];
+    const dm=grouped[date].reverse();
     return`<div class="day-group">
       <div class="day-header">${fmtDayLabel(date)}</div>
       <div class="day-grid">${dm.map(m=>{
@@ -1314,7 +1314,19 @@ document.getElementById('overlay').addEventListener('click',e=>{if(e.target===e.
 /* ══════════════════════════════════════════
    Init
    ══════════════════════════════════════════ */
-(async()=>{await openDB();renderToday()})();
+/* Migrate old meals saved with UTC dates to local dates */
+async function migrateDates(){
+  const all=await dbRange('0000-00-00','9999-99-99');
+  for(const m of all){
+    const correctDate=localDateStr(new Date(m.time));
+    if(m.date!==correctDate){
+      m.date=correctDate;
+      await dbPut(m);
+    }
+  }
+}
+
+(async()=>{await openDB();await migrateDates();renderToday()})();
 </script>
 </body>
 </html>
