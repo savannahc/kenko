@@ -581,7 +581,6 @@ header h1{
         <span>Clear all data</span>
         <button class="danger" id="clearAllBtn">Clear</button>
       </div>
-      <p class="settings-note">Photos stay in this app — never saved to your camera roll.</p>
     </div>
   </div>
 </div>
@@ -917,8 +916,6 @@ async function renderToday(){
   if(todayMeals.length){
     const sorted=[...todayMeals].reverse();
     html+='<h2>Today</h2><div class="meal-grid">'+sorted.map(m=>renderMealCard(m)).join('')+'</div>';
-  } else {
-    html+='<div class="empty-state">No meals yet today.<br>Snap a photo when you eat.</div>';
   }
 
   // Recent days
