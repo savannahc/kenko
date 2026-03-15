@@ -195,11 +195,12 @@ header h1{
 
 /* Cancel button */
 .cancel-edit-btn{
-  width:calc(100% - 36px);margin:0 18px 18px;padding:12px;
+  width:calc(100% - 36px);margin:0 18px 18px;padding:16px;
   border-radius:28px;border:1px solid var(--border);
   background:var(--card);color:var(--text-soft);
-  font-family:'Nunito',inherit;font-size:.82rem;font-weight:600;
+  font-family:'Nunito',inherit;font-size:.88rem;font-weight:600;
   cursor:pointer;text-align:center;transition:all .15s;
+  min-height:52px;
 }
 .cancel-edit-btn:active{background:var(--accent-light)}
 
@@ -265,7 +266,9 @@ header h1{
   background:var(--card);border:none;
   border-radius:var(--radius);overflow:hidden;
   box-shadow:var(--shadow);
+  cursor:pointer;transition:box-shadow .15s;
 }
+.grid-card:active{box-shadow:0 0 0 2px var(--accent)}
 
 .grid-card-photo{aspect-ratio:1;background:#E8EBF0;overflow:hidden}
 .grid-card-photo img{width:100%;height:100%;object-fit:cover}
@@ -848,6 +851,7 @@ document.getElementById('saveBtn').addEventListener('click',async()=>{
 
   cancelEdit();
   renderToday();
+  if(document.getElementById('weekView').classList.contains('active')) renderWeek();
 });
 
 /* ══════════════════════════════════════════
@@ -953,12 +957,12 @@ async function renderWeek(){
         const ht=m.hunger?`🍽${m.hunger}`:'';
         const st=m.satisfaction?`✦${m.satisfaction}`:'';
         if(m.photo){
-          return`<div class="grid-card">
+          return`<div class="grid-card" data-meal-id="${m.id}">
             <div class="grid-card-photo"><img src="${m.photo}" alt="" loading="lazy"></div>
             <div class="grid-card-meta"><span>${fmtTime(m.time)}</span><span>${ht} ${st}</span></div>
           </div>`;
         }
-        return`<div class="grid-card">
+        return`<div class="grid-card" data-meal-id="${m.id}">
           <div class="grid-card-no-photo">${m.note?esc(m.note).slice(0,60):'No photo'}</div>
           <div class="grid-card-meta"><span>${fmtTime(m.time)}</span><span>${ht} ${st}</span></div>
         </div>`;
@@ -966,6 +970,15 @@ async function renderWeek(){
     </div>`;
   }).join('');
 }
+
+/* Tap grid card in week view to edit */
+document.getElementById('weekView').addEventListener('click',async(e)=>{
+  const card=e.target.closest('.grid-card[data-meal-id]');
+  if(!card)return;
+  const id=+card.dataset.mealId;
+  const meal=await dbGet(id);
+  if(meal) startEdit(meal);
+});
 
 document.getElementById('prevWeek').addEventListener('click',()=>{wOff--;renderWeek()});
 document.getElementById('nextWeek').addEventListener('click',()=>{if(wOff<0){wOff++;renderWeek()}});
