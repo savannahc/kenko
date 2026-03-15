@@ -965,9 +965,9 @@ function renderMealCard(m){
   </div></div>`;
 }
 
-/* Tap any meal card or grid card anywhere to edit */
-document.addEventListener('click',async(e)=>{
-  const card=e.target.closest('[data-meal-id]');
+/* Tap any meal card or grid card to edit */
+document.querySelector('.app').addEventListener('click',async(e)=>{
+  const card=e.target.closest('.meal-card[data-meal-id],.grid-card[data-meal-id]');
   if(!card)return;
   const id=+card.dataset.mealId;
   const meal=await dbGet(id);
@@ -994,7 +994,7 @@ async function renderWeek(){
   const dates=Object.keys(grouped).sort().reverse();
 
   wv.innerHTML=dates.map(date=>{
-    const dm=grouped[date].reverse();
+    const dm=[...grouped[date]].reverse();
     return`<div class="day-group">
       <div class="day-header">${fmtDayLabel(date)}</div>
       <div class="day-grid">${dm.map(m=>{
@@ -1311,16 +1311,21 @@ document.getElementById('overlay').addEventListener('click',e=>{if(e.target===e.
 /* ══════════════════════════════════════════
    Init
    ══════════════════════════════════════════ */
-/* Migrate old meals saved with UTC dates to local dates */
+/* Migrate old meals saved with UTC dates to local dates (runs once) */
 async function migrateDates(){
+  if(localStorage.getItem('migrateDates_v1'))return;
   const all=await dbRange('0000-00-00','9999-99-99');
+  const tx=db.transaction('meals','readwrite');
+  const store=tx.objectStore('meals');
   for(const m of all){
     const correctDate=localDateStr(new Date(m.time));
     if(m.date!==correctDate){
       m.date=correctDate;
-      await dbPut(m);
+      store.put(m);
     }
   }
+  await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=rej});
+  localStorage.setItem('migrateDates_v1','1');
 }
 
 (async()=>{await openDB();await migrateDates();renderToday()})();
