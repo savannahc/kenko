@@ -203,16 +203,6 @@ header h1{
 .save-btn:active{transform:scale(.98);opacity:.9}
 .save-btn:disabled{opacity:.35;cursor:default}
 
-/* Cancel button */
-.cancel-edit-btn{
-  width:calc(100% - 36px);margin:0 18px 18px;padding:16px;
-  border-radius:28px;border:1px solid var(--border);
-  background:var(--card);color:var(--text-soft);
-  font-family:'Nunito',inherit;font-size:.88rem;font-weight:600;
-  cursor:pointer;text-align:center;transition:all .15s;
-  min-height:52px;
-}
-.cancel-edit-btn:active{background:var(--accent-light)}
 
 /* Hunger summary card */
 .hunger-summary{
@@ -559,7 +549,6 @@ header h1{
           <textarea id="noteInput" rows="1" placeholder="Optional note…"></textarea>
         </div>
         <button class="save-btn" id="saveBtn">Save Meal</button>
-        <button class="cancel-edit-btn" id="cancelEditBtn">Cancel</button>
       </div>
     </div>
   </div>
@@ -863,8 +852,6 @@ function startEdit(meal){
   showPanel();
 }
 
-/* Cancel button */
-document.getElementById('cancelEditBtn').addEventListener('click',cancelEdit);
 
 /* ══════════════════════════════════════════
    Save meal
