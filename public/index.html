@@ -133,6 +133,15 @@ header h1{
   backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
 }
 
+.delete-btn{
+  position:absolute;top:10px;left:10px;
+  min-width:48px;min-height:48px;padding:8px 16px;border-radius:24px;
+  background:rgba(0,0,0,.5);border:none;color:#fff;
+  font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
+
 /* Scales */
 .scales{padding:16px 18px;display:flex;flex-direction:column;gap:14px}
 
@@ -456,6 +465,7 @@ header h1{
       <div class="capture-panel-inner">
         <div class="photo-preview" id="photoPreview">
           <img id="previewImg" alt="Meal photo">
+          <button class="delete-btn" id="deleteBtn"><img src="delete.svg" class="icon icon-white" style="width:14px;height:14px;margin-right:4px">Delete</button>
           <button class="retake-btn" id="retakeBtn"><img src="camera.svg" class="icon icon-white" style="width:14px;height:14px;margin-right:4px">Retake</button>
         </div>
         <div class="scales">
@@ -583,6 +593,14 @@ function dbGet(id){
   });
 }
 
+function dbDelete(id){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction('meals','readwrite');
+    tx.objectStore('meals').delete(id).onsuccess=()=>res();
+    tx.onerror=e=>rej(e);
+  });
+}
+
 /* ══════════════════════════════════════════
    Helpers
    ══════════════════════════════════════════ */
@@ -644,6 +662,16 @@ document.getElementById('retakeBtn').addEventListener('click',()=>{
   camIn.value='';
   hidePanel();
   setTimeout(()=>camIn.click(),350);
+});
+
+/* Delete meal */
+document.getElementById('deleteBtn').addEventListener('click',async()=>{
+  if(!editingMeal)return;
+  const id=editingMeal.id;
+  try{ await dbDelete(id) }catch(err){ console.error('Delete failed',err);return }
+  showToast('Meal deleted','delete.svg');
+  cancelEdit();
+  renderToday();
 });
 
 /* Panel show/hide with FAB state */
@@ -737,6 +765,7 @@ function resetForm(){
   document.querySelectorAll('.scale-btn').forEach(b=>b.classList.remove('selected'));
   editingMeal=null;
   document.getElementById('saveBtn').innerHTML='<img src="tick.svg" class="icon icon-white" style="width:14px;height:14px;margin-right:5px">Save Meal';
+  document.getElementById('deleteBtn').style.display='none';
 }
 
 function cancelEdit(){
@@ -767,6 +796,7 @@ function startEdit(meal){
   });
   // UI
   document.getElementById('saveBtn').innerHTML='<img src="tick.svg" class="icon icon-white" style="width:14px;height:14px;margin-right:5px">Update Meal';
+  document.getElementById('deleteBtn').style.display='flex';
   showPanel();
 }
 
