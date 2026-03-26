@@ -173,6 +173,16 @@ header h1{
 .scale-btn.selected .sub{color:var(--accent)}
 .scale-btn:active{transform:scale(.96)}
 
+/* Note input */
+.note-wrap{padding:0 18px 14px}
+.note-wrap input{
+  width:100%;font-family:inherit;font-size:.82rem;
+  border:1px solid var(--border);border-radius:12px;
+  padding:10px 13px;color:var(--text);background:var(--card);
+}
+.note-wrap input:focus{outline:none;border-color:var(--accent)}
+.note-wrap input::placeholder{color:var(--text-soft);font-style:italic}
+
 
 /* Save button */
 .save-btn{
@@ -233,6 +243,11 @@ header h1{
   font-family:inherit;
 }
 
+
+.meal-card-note{
+  font-size:.76rem;color:var(--text-soft);font-style:italic;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
 
 .meal-card-scales{
   display:flex;gap:14px;font-size:.72rem;color:var(--text-mid);
@@ -502,6 +517,7 @@ header h1{
             </div>
           </div>
         </div>
+        <div class="note-wrap"><input type="text" id="noteInput" placeholder="Add a note..." autocomplete="off"></div>
         <button class="save-btn" id="saveBtn"><img src="tick.svg" class="icon icon-white" style="width:14px;height:14px;margin-right:5px">Save Meal</button>
       </div>
     </div>
@@ -803,6 +819,7 @@ const camIn=document.getElementById('cameraInput');
 const preview=document.getElementById('photoPreview');
 const prevImg=document.getElementById('previewImg');
 const capturePanel=document.getElementById('capturePanel');
+const noteIn=document.getElementById('noteInput');
 
 const fabBtn=document.getElementById('addMealBtn');
 
@@ -921,6 +938,7 @@ function showToast(msg,iconSrc){
 function resetForm(){
   photoB64=null;
   prevImg.src='';camIn.value='';
+  noteIn.value='';
   hunger=null;satisfaction=null;
   document.querySelectorAll('.scale-btn').forEach(b=>b.classList.remove('selected'));
   editingMeal=null;
@@ -954,6 +972,8 @@ function startEdit(meal){
   document.querySelectorAll('[data-scale="satisfaction"] .scale-btn').forEach(b=>{
     b.classList.toggle('selected',satisfaction!==null&&+b.dataset.val===satisfaction);
   });
+  // Note
+  noteIn.value=meal.note||'';
   // UI
   document.getElementById('saveBtn').innerHTML='<img src="tick.svg" class="icon icon-white" style="width:14px;height:14px;margin-right:5px">Update Meal';
   document.getElementById('deleteBtn').style.display='flex';
@@ -965,8 +985,9 @@ function startEdit(meal){
    Save meal
    ══════════════════════════════════════════ */
 document.getElementById('saveBtn').addEventListener('click',async()=>{
-  /* Allow save if ANY input was given: photo or scale */
-  if(!photoB64&&hunger===null&&satisfaction===null)return;
+  /* Allow save if ANY input was given: photo, scale, or note */
+  const note=noteIn.value.trim();
+  if(!photoB64&&hunger===null&&satisfaction===null&&!note)return;
 
   if(editingMeal){
     const meal={
@@ -974,6 +995,7 @@ document.getElementById('saveBtn').addEventListener('click',async()=>{
       date:editingMeal.date,
       time:editingMeal.time,
       photo:photoB64||null,
+      note:note||null,
       hunger,satisfaction
     };
     try{ await putMeal(meal) }catch(err){ console.error('Update failed',err);return }
@@ -983,6 +1005,7 @@ document.getElementById('saveBtn').addEventListener('click',async()=>{
       date:today(),
       time:new Date().toISOString(),
       photo:photoB64||null,
+      note:note||null,
       hunger,satisfaction
     };
     try{ await addMeal(meal) }catch(err){ console.error('Save failed',err);return }
@@ -1057,19 +1080,22 @@ function renderMealCard(m){
   const time=fmtTime(m.time);
   const ht=m.hunger?`<img src="cutlery.svg" class="icon icon-soft" style="width:12px;height:12px"> ${hLabels[m.hunger]}`:'';
   const st=m.satisfaction?`<img src="star.svg" class="icon icon-soft" style="width:12px;height:12px"> ${sLabels[m.satisfaction]}`:'';
+  const nt=m.note?`<div class="meal-card-note">${esc(m.note)}</div>`:'';
 
   if(m.photo){
     return`<div class="meal-card" data-meal-id="${m.id}">
       <div class="meal-card-photo"><img src="${m.photo}" alt="" loading="lazy"></div>
       <div class="meal-card-info">
         <div class="meal-card-time">${time}</div>
-                <div class="meal-card-scales">${ht?`<span>${ht}</span>`:''}${st?`<span>${st}</span>`:''}</div>
+        ${nt}
+        <div class="meal-card-scales">${ht?`<span>${ht}</span>`:''}${st?`<span>${st}</span>`:''}</div>
       </div>
     </div>`;
   }
   return`<div class="meal-card no-photo-card" data-meal-id="${m.id}"><div class="meal-card-info">
     <div class="meal-card-time">${time}</div>
-        <div class="meal-card-scales">${ht?`<span>${ht}</span>`:''}${st?`<span>${st}</span>`:''}</div>
+    ${nt}
+    <div class="meal-card-scales">${ht?`<span>${ht}</span>`:''}${st?`<span>${st}</span>`:''}</div>
   </div></div>`;
 }
 
@@ -1326,8 +1352,8 @@ document.getElementById('exportBtn').addEventListener('click',async()=>{
   const r=weekRange(0);
   const meals=await rangeMeals(r.start,r.end);
   if(!meals.length){showDialog('Nothing to export this week.',null);return}
-  const rows=[['Date','Time','Hunger (1-3)','Satisfaction (1-3)']];
-  meals.forEach(m=>rows.push([m.date,fmtTime(m.time),m.hunger||'',m.satisfaction||'']));
+  const rows=[['Date','Time','Hunger (1-3)','Satisfaction (1-3)','Note']];
+  meals.forEach(m=>rows.push([m.date,fmtTime(m.time),m.hunger||'',m.satisfaction||'',m.note||'']));
   const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const b=new Blob([csv],{type:'text/csv'});
   const u=URL.createObjectURL(b);
