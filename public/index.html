@@ -12,8 +12,11 @@
 <link rel="apple-touch-icon" href="/sun.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Nunito:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital@1&family=Nunito:wght@600;700&display=swap" rel="stylesheet">
 <title>Kenko</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 
@@ -170,6 +173,16 @@ header h1{
 .scale-btn.selected .sub{color:var(--accent)}
 .scale-btn:active{transform:scale(.96)}
 
+/* Note input */
+.note-wrap{padding:0 18px 14px}
+.note-wrap input{
+  width:100%;font-family:inherit;font-size:.82rem;
+  border:1px solid var(--border);border-radius:12px;
+  padding:10px 13px;color:var(--text);background:var(--card);
+}
+.note-wrap input:focus{outline:none;border-color:var(--accent)}
+.note-wrap input::placeholder{color:var(--text-soft);font-style:italic}
+
 
 /* Save button */
 .save-btn{
@@ -188,7 +201,10 @@ header h1{
 .hunger-summary{
   background:#fff;border-radius:var(--radius);
   padding:16px 20px;margin-bottom:20px;
+}
+.hunger-summary-top{
   display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;
 }
 .hunger-summary-label{
   font-size:.62rem;font-weight:600;text-transform:uppercase;
@@ -197,6 +213,35 @@ header h1{
 .hunger-summary-pct{
   font-size:1.6rem;font-weight:700;color:var(--accent);
   font-family:'Nunito',inherit;letter-spacing:-.02em;
+}
+.hunger-bar-wrap{position:relative;overflow:visible}
+.hunger-bar-track{
+  width:100%;height:8px;border-radius:4px;
+  background:#ddd9d4;
+}
+.hunger-bar-fill{
+  height:100%;border-radius:4px;
+  background:var(--accent);
+  transition:width .6s ease;
+}
+.hunger-bar-marker{
+  position:absolute;left:75%;top:50%;
+  transform:translate(-50%,-50%);
+  display:flex;flex-direction:column;align-items:center;
+}
+.hunger-bar-marker-line{
+  width:2px;height:16px;
+  background:var(--text-mid);opacity:.4;
+  border-radius:1px;
+}
+.hunger-bar-marker-label{
+  font-size:.55rem;color:var(--text-soft);
+  white-space:nowrap;margin-bottom:2px;
+}
+.hunger-hint{
+  font-family:'Lora','Georgia',serif;font-style:italic;
+  font-size:.68rem;color:var(--text-soft);
+  margin-top:10px;
 }
 
 /* Today's meal feed */
@@ -230,6 +275,11 @@ header h1{
   font-family:inherit;
 }
 
+
+.meal-card-note{
+  font-size:.76rem;color:var(--text-soft);font-style:italic;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
 
 .meal-card-scales{
   display:flex;gap:14px;font-size:.72rem;color:var(--text-mid);
@@ -432,6 +482,17 @@ header h1{
 .tab .icon{width:16px;height:16px;filter:brightness(0) opacity(.4)}
 .tab.active .icon{filter:brightness(0) saturate(100%) invert(36%) sepia(85%) saturate(2000%) hue-rotate(5deg) brightness(100%) contrast(100%)}
 
+/* Account */
+.account-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover}
+.account-info{display:flex;align-items:center;gap:10px}
+.account-name{font-size:.84rem;color:var(--text-mid)}
+.account-email{font-size:.72rem;color:var(--text-soft);display:block}
+.sync-badge{
+  display:inline-block;font-size:.6rem;font-weight:600;
+  color:var(--accent);background:var(--accent-light);
+  padding:2px 8px;border-radius:10px;margin-top:2px;
+}
+
 @media(max-width:360px){
   html{font-size:14px}
   .day-grid{grid-template-columns:repeat(2,1fr)}
@@ -456,8 +517,18 @@ header h1{
     <button class="fab-add" id="addMealBtn"><img src="cross.svg" alt=""></button>
 
     <div class="hunger-summary" id="hungerSummary" style="display:none">
-      <span class="hunger-summary-label">Eaten when hungry</span>
-      <span class="hunger-summary-pct" id="hungerSummaryPct">--</span>
+      <div class="hunger-summary-top">
+        <span class="hunger-summary-label">Eaten when hungry</span>
+        <span class="hunger-summary-pct" id="hungerSummaryPct">--</span>
+      </div>
+      <div class="hunger-bar-wrap">
+        <div class="hunger-bar-marker">
+          <span class="hunger-bar-marker-label">75% goal</span>
+          <div class="hunger-bar-marker-line"></div>
+        </div>
+        <div class="hunger-bar-track"><div class="hunger-bar-fill" id="hungerBarFill" style="width:0%"></div></div>
+      </div>
+      <div class="hunger-hint" id="hungerHint"></div>
     </div>
 
     <div class="today-feed" id="todayFeed"></div>
@@ -488,6 +559,7 @@ header h1{
             </div>
           </div>
         </div>
+        <div class="note-wrap"><input type="text" id="noteInput" placeholder="Add a note..." autocomplete="off"></div>
         <button class="save-btn" id="saveBtn"><img src="tick.svg" class="icon icon-white" style="width:14px;height:14px;margin-right:5px">Save Meal</button>
       </div>
     </div>
@@ -507,6 +579,10 @@ header h1{
   <div class="view" id="settingsView">
     <div class="settings-view">
       <h2>Settings</h2>
+      <div class="setting-item" id="accountItem">
+        <span id="accountLabel">Sign in to sync across devices</span>
+        <button id="authBtn">Sign in</button>
+      </div>
       <div class="setting-item">
         <span>Export this week</span>
         <button id="exportBtn"><img src="download.svg" class="icon icon-soft" style="width:13px;height:13px;margin-right:4px">CSV</button>
@@ -604,6 +680,146 @@ function dbDelete(id){
 }
 
 /* ══════════════════════════════════════════
+   Firebase — cloud sync across devices
+   ══════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "***REMOVED***",
+  authDomain: "kenko-54f60.firebaseapp.com",
+  projectId: "kenko-54f60",
+  storageBucket: "kenko-54f60.firebasestorage.app",
+  messagingSenderId: "473711393477",
+  appId: "1:473711393477:web:a5c9e12c3ece07668e0eac"
+};
+
+let currentUser = null;
+let firestore = null;
+
+try {
+  firebase.initializeApp(firebaseConfig);
+  firestore = firebase.firestore();
+  firestore.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+} catch(e) {
+  console.warn('Firebase init failed, using local storage only', e);
+}
+
+function mealsCol(){
+  return firestore.collection('users').doc(currentUser.uid).collection('meals');
+}
+
+async function cloudAdd(meal){
+  const ref = await mealsCol().add(meal);
+  return ref.id;
+}
+
+async function cloudPut(meal){
+  const {id, ...data} = meal;
+  await mealsCol().doc(String(id)).set(data);
+  return id;
+}
+
+async function cloudGet(id){
+  const doc = await mealsCol().doc(String(id)).get();
+  return doc.exists ? {id:doc.id, ...doc.data()} : null;
+}
+
+async function cloudDelete(id){
+  await mealsCol().doc(String(id)).delete();
+}
+
+async function cloudRange(start, end){
+  const snap = await mealsCol()
+    .where('date','>=',start)
+    .where('date','<=',end)
+    .get();
+  return snap.docs.map(d=>({id:d.id, ...d.data()}));
+}
+
+async function cloudClear(){
+  const snap = await mealsCol().get();
+  const batch = firestore.batch();
+  snap.docs.forEach(d=>batch.delete(d.ref));
+  await batch.commit();
+}
+
+/* Wrapper functions — route to cloud when signed in */
+async function addMeal(meal){
+  if(currentUser) return cloudAdd(meal);
+  return dbAdd(meal);
+}
+async function putMeal(meal){
+  if(currentUser) return cloudPut(meal);
+  return dbPut(meal);
+}
+async function getMeal(id){
+  if(currentUser) return cloudGet(id);
+  return dbGet(id);
+}
+async function deleteMeal(id){
+  if(currentUser) return cloudDelete(id);
+  return dbDelete(id);
+}
+async function rangeMeals(start, end){
+  if(currentUser) return cloudRange(start, end);
+  return dbRange(start, end);
+}
+async function clearAllMeals(){
+  if(currentUser) return cloudClear();
+  return dbClear();
+}
+
+/* Migrate local IndexedDB data to cloud on first sign-in */
+async function migrateLocalToCloud(){
+  const local = await dbRange('0000-00-00','9999-99-99');
+  if(!local.length) return;
+  // Upload in batches of 400 (Firestore batch limit is 500)
+  for(let i=0;i<local.length;i+=400){
+    const chunk = local.slice(i,i+400);
+    const batch = firestore.batch();
+    for(const meal of chunk){
+      const {id, ...data} = meal;
+      batch.set(mealsCol().doc(), data);
+    }
+    await batch.commit();
+  }
+  await dbClear();
+  showToast('Data synced to cloud','tick.svg');
+}
+
+/* Auth UI */
+function updateAuthUI(){
+  const label = document.getElementById('accountLabel');
+  const btn = document.getElementById('authBtn');
+  if(currentUser){
+    const name = currentUser.displayName || currentUser.email;
+    const photo = currentUser.photoURL;
+    label.innerHTML = (photo ? `<img class="account-avatar" src="${photo}" alt="">` : '') +
+      `<div class="account-info"><div><span class="account-name">${esc(name)}</span>` +
+      `<span class="account-email">${esc(currentUser.email||'')}</span>` +
+      `<span class="sync-badge">synced</span></div></div>`;
+    btn.textContent = 'Sign out';
+    btn.classList.remove('danger');
+  } else {
+    label.textContent = 'Sign in to sync across devices';
+    btn.textContent = 'Sign in';
+  }
+}
+
+async function handleAuth(){
+  if(currentUser){
+    await firebase.auth().signOut();
+  } else {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+      await firebase.auth().signInWithPopup(provider);
+    } catch(e) {
+      if(e.code==='auth/popup-blocked'||e.code==='auth/cancelled-popup-request'){
+        await firebase.auth().signInWithRedirect(provider);
+      }
+    }
+  }
+}
+
+/* ══════════════════════════════════════════
    Helpers
    ══════════════════════════════════════════ */
 const localDateStr=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -645,6 +861,7 @@ const camIn=document.getElementById('cameraInput');
 const preview=document.getElementById('photoPreview');
 const prevImg=document.getElementById('previewImg');
 const capturePanel=document.getElementById('capturePanel');
+const noteIn=document.getElementById('noteInput');
 
 const fabBtn=document.getElementById('addMealBtn');
 
@@ -670,7 +887,7 @@ document.getElementById('retakeBtn').addEventListener('click',()=>{
 document.getElementById('deleteBtn').addEventListener('click',async()=>{
   if(!editingMeal)return;
   const id=editingMeal.id;
-  try{ await dbDelete(id) }catch(err){ console.error('Delete failed',err);return }
+  try{ await deleteMeal(id) }catch(err){ console.error('Delete failed',err);return }
   showToast('Meal deleted','delete.svg');
   cancelEdit();
   renderToday();
@@ -763,6 +980,7 @@ function showToast(msg,iconSrc){
 function resetForm(){
   photoB64=null;
   prevImg.src='';camIn.value='';
+  noteIn.value='';
   hunger=null;satisfaction=null;
   document.querySelectorAll('.scale-btn').forEach(b=>b.classList.remove('selected'));
   editingMeal=null;
@@ -796,6 +1014,8 @@ function startEdit(meal){
   document.querySelectorAll('[data-scale="satisfaction"] .scale-btn').forEach(b=>{
     b.classList.toggle('selected',satisfaction!==null&&+b.dataset.val===satisfaction);
   });
+  // Note
+  noteIn.value=meal.note||'';
   // UI
   document.getElementById('saveBtn').innerHTML='<img src="tick.svg" class="icon icon-white" style="width:14px;height:14px;margin-right:5px">Update Meal';
   document.getElementById('deleteBtn').style.display='flex';
@@ -807,8 +1027,9 @@ function startEdit(meal){
    Save meal
    ══════════════════════════════════════════ */
 document.getElementById('saveBtn').addEventListener('click',async()=>{
-  /* Allow save if ANY input was given: photo or scale */
-  if(!photoB64&&hunger===null&&satisfaction===null)return;
+  /* Allow save if ANY input was given: photo, scale, or note */
+  const note=noteIn.value.trim();
+  if(!photoB64&&hunger===null&&satisfaction===null&&!note)return;
 
   if(editingMeal){
     const meal={
@@ -816,18 +1037,20 @@ document.getElementById('saveBtn').addEventListener('click',async()=>{
       date:editingMeal.date,
       time:editingMeal.time,
       photo:photoB64||null,
+      note:note||null,
       hunger,satisfaction
     };
-    try{ await dbPut(meal) }catch(err){ console.error('Update failed',err);return }
+    try{ await putMeal(meal) }catch(err){ console.error('Update failed',err);return }
     showToast('Meal updated','tick.svg');
   }else{
     const meal={
       date:today(),
       time:new Date().toISOString(),
       photo:photoB64||null,
+      note:note||null,
       hunger,satisfaction
     };
-    try{ await dbAdd(meal) }catch(err){ console.error('Save failed',err);return }
+    try{ await addMeal(meal) }catch(err){ console.error('Save failed',err);return }
     showToast('Meal logged','tick.svg');
   }
 
@@ -841,18 +1064,22 @@ document.getElementById('saveBtn').addEventListener('click',async()=>{
 async function renderToday(){
   const todayDate=today();
   // Get today's meals
-  const todayMeals=await dbRange(todayDate,todayDate);
+  const todayMeals=await rangeMeals(todayDate,todayDate);
 
   // Update hunger summary card (last 7 days)
   const summaryStart=new Date();summaryStart.setDate(summaryStart.getDate()-6);
-  const allRecent=await dbRange(localDateStr(summaryStart),todayDate);
+  const allRecent=await rangeMeals(localDateStr(summaryStart),todayDate);
   const withHunger=allRecent.filter(m=>m.hunger!==null&&m.hunger!==undefined);
   const summaryEl=document.getElementById('hungerSummary');
   if(withHunger.length>0){
     const hungry=withHunger.filter(m=>m.hunger>=2).length;
     const pct=Math.round((hungry/withHunger.length)*100);
     document.getElementById('hungerSummaryPct').textContent=pct+'%';
-    summaryEl.style.display='flex';
+    document.getElementById('hungerBarFill').style.width=pct+'%';
+    const goal=75;
+    document.getElementById('hungerHint').textContent=
+      pct>=goal?'You\u2019ve hit your goal \u2713':((goal-pct)+'% away from your goal');
+    summaryEl.style.display='block';
   }else{
     summaryEl.style.display='none';
   }
@@ -862,7 +1089,7 @@ async function renderToday(){
   const recentStartStr=localDateStr(recentStart);
   const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
   const yesterdayStr=localDateStr(yesterday);
-  const recentMeals=await dbRange(recentStartStr,yesterdayStr);
+  const recentMeals=await rangeMeals(recentStartStr,yesterdayStr);
 
   const feed=document.getElementById('todayFeed');
   let html='';
@@ -899,19 +1126,22 @@ function renderMealCard(m){
   const time=fmtTime(m.time);
   const ht=m.hunger?`<img src="cutlery.svg" class="icon icon-soft" style="width:12px;height:12px"> ${hLabels[m.hunger]}`:'';
   const st=m.satisfaction?`<img src="star.svg" class="icon icon-soft" style="width:12px;height:12px"> ${sLabels[m.satisfaction]}`:'';
+  const nt=m.note?`<div class="meal-card-note">${esc(m.note)}</div>`:'';
 
   if(m.photo){
     return`<div class="meal-card" data-meal-id="${m.id}">
       <div class="meal-card-photo"><img src="${m.photo}" alt="" loading="lazy"></div>
       <div class="meal-card-info">
         <div class="meal-card-time">${time}</div>
-                <div class="meal-card-scales">${ht?`<span>${ht}</span>`:''}${st?`<span>${st}</span>`:''}</div>
+        ${nt}
+        <div class="meal-card-scales">${ht?`<span>${ht}</span>`:''}${st?`<span>${st}</span>`:''}</div>
       </div>
     </div>`;
   }
   return`<div class="meal-card no-photo-card" data-meal-id="${m.id}"><div class="meal-card-info">
     <div class="meal-card-time">${time}</div>
-        <div class="meal-card-scales">${ht?`<span>${ht}</span>`:''}${st?`<span>${st}</span>`:''}</div>
+    ${nt}
+    <div class="meal-card-scales">${ht?`<span>${ht}</span>`:''}${st?`<span>${st}</span>`:''}</div>
   </div></div>`;
 }
 
@@ -919,8 +1149,8 @@ function renderMealCard(m){
 document.querySelector('.app').addEventListener('click',async(e)=>{
   const card=e.target.closest('.meal-card[data-meal-id],.grid-card[data-meal-id]');
   if(!card)return;
-  const id=+card.dataset.mealId;
-  const meal=await dbGet(id);
+  const id=currentUser ? card.dataset.mealId : +card.dataset.mealId;
+  const meal=await getMeal(id);
   if(meal) startEdit(meal);
 });
 
@@ -969,7 +1199,7 @@ function dateNDaysAgo(n){
 async function renderMetrics(){
   const startDate=dateNDaysAgo(metricsDays);
   const endDate=today();
-  const meals=await dbRange(startDate,endDate);
+  const meals=await rangeMeals(startDate,endDate);
   const container=document.getElementById('metricsCards');
 
   if(!meals.length){
@@ -1166,10 +1396,10 @@ function mCard(title,inner){
    ══════════════════════════════════════════ */
 document.getElementById('exportBtn').addEventListener('click',async()=>{
   const r=weekRange(0);
-  const meals=await dbRange(r.start,r.end);
+  const meals=await rangeMeals(r.start,r.end);
   if(!meals.length){showDialog('Nothing to export this week.',null);return}
-  const rows=[['Date','Time','Hunger (1-3)','Satisfaction (1-3)']];
-  meals.forEach(m=>rows.push([m.date,fmtTime(m.time),m.hunger||'',m.satisfaction||'']));
+  const rows=[['Date','Time','Hunger (1-3)','Satisfaction (1-3)','Note']];
+  meals.forEach(m=>rows.push([m.date,fmtTime(m.time),m.hunger||'',m.satisfaction||'',m.note||'']));
   const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const b=new Blob([csv],{type:'text/csv'});
   const u=URL.createObjectURL(b);
@@ -1183,7 +1413,7 @@ document.getElementById('exportBtn').addEventListener('click',async()=>{
    ══════════════════════════════════════════ */
 document.getElementById('clearAllBtn').addEventListener('click',()=>{
   showDialog('Clear all meal data and photos? This can\'t be undone.',async()=>{
-    await dbClear();renderToday();
+    await clearAllMeals();renderToday();
   });
 });
 
@@ -1211,6 +1441,9 @@ document.getElementById('dialogConfirm').addEventListener('click',()=>{if(confir
 document.getElementById('dialogCancel').addEventListener('click',hideDialog);
 document.getElementById('overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)hideDialog()});
 
+/* Auth button */
+document.getElementById('authBtn').addEventListener('click',handleAuth);
+
 /* ══════════════════════════════════════════
    Init
    ══════════════════════════════════════════ */
@@ -1231,7 +1464,23 @@ async function migrateDates(){
   localStorage.setItem('migrateDates_v1','1');
 }
 
-(async()=>{await openDB();await migrateDates();renderToday()})();
+(async()=>{
+  await openDB();
+  await migrateDates();
+
+  if(firebase.auth){
+    firebase.auth().onAuthStateChanged(async(user)=>{
+      currentUser=user;
+      updateAuthUI();
+      if(user){
+        try{ await migrateLocalToCloud() }catch(e){ console.warn('Migration failed',e) }
+      }
+      renderToday();
+    });
+  } else {
+    renderToday();
+  }
+})();
 </script>
 </body>
 </html>
