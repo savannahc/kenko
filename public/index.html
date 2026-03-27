@@ -809,13 +809,7 @@ async function handleAuth(){
     await firebase.auth().signOut();
   } else {
     const provider = new firebase.auth.GoogleAuthProvider();
-    try {
-      await firebase.auth().signInWithPopup(provider);
-    } catch(e) {
-      if(e.code==='auth/popup-blocked'||e.code==='auth/cancelled-popup-request'){
-        await firebase.auth().signInWithRedirect(provider);
-      }
-    }
+    await firebase.auth().signInWithRedirect(provider);
   }
 }
 
