@@ -1465,9 +1465,16 @@ async function migrateDates(){
   await migrateDates();
 
   if(firebase.auth){
-    try{ await firebase.auth().getRedirectResult() }catch(e){ console.warn('Redirect result',e) }
+    try{
+      const result = await firebase.auth().getRedirectResult();
+      if(result&&result.user) console.log('Redirect sign-in OK',result.user.email);
+    }catch(e){
+      console.warn('Redirect result error',e);
+      document.getElementById('accountLabel').innerHTML='Auth error: '+e.code;
+    }
     firebase.auth().onAuthStateChanged(async(user)=>{
       currentUser=user;
+      console.log('Auth state:',user?user.email:'signed out');
       updateAuthUI();
       if(user){
         try{ await migrateLocalToCloud() }catch(e){ console.warn('Migration failed',e) }
