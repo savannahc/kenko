@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="/sun.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Nunito:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital@1&family=Nunito:wght@600;700&display=swap" rel="stylesheet">
 <title>Kenko</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
@@ -201,7 +201,10 @@ header h1{
 .hunger-summary{
   background:#fff;border-radius:var(--radius);
   padding:16px 20px;margin-bottom:20px;
+}
+.hunger-summary-top{
   display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;
 }
 .hunger-summary-label{
   font-size:.62rem;font-weight:600;text-transform:uppercase;
@@ -210,6 +213,35 @@ header h1{
 .hunger-summary-pct{
   font-size:1.6rem;font-weight:700;color:var(--accent);
   font-family:'Nunito',inherit;letter-spacing:-.02em;
+}
+.hunger-bar-wrap{position:relative;overflow:visible}
+.hunger-bar-track{
+  width:100%;height:8px;border-radius:4px;
+  background:#ddd9d4;
+}
+.hunger-bar-fill{
+  height:100%;border-radius:4px;
+  background:var(--accent);
+  transition:width .6s ease;
+}
+.hunger-bar-marker{
+  position:absolute;left:75%;top:50%;
+  transform:translate(-50%,-50%);
+  display:flex;flex-direction:column;align-items:center;
+}
+.hunger-bar-marker-line{
+  width:2px;height:16px;
+  background:var(--text-mid);opacity:.4;
+  border-radius:1px;
+}
+.hunger-bar-marker-label{
+  font-size:.55rem;color:var(--text-soft);
+  white-space:nowrap;margin-bottom:2px;
+}
+.hunger-hint{
+  font-family:'Lora','Georgia',serif;font-style:italic;
+  font-size:.68rem;color:var(--text-soft);
+  margin-top:10px;
 }
 
 /* Today's meal feed */
@@ -485,8 +517,18 @@ header h1{
     <button class="fab-add" id="addMealBtn"><img src="cross.svg" alt=""></button>
 
     <div class="hunger-summary" id="hungerSummary" style="display:none">
-      <span class="hunger-summary-label">Eaten when hungry</span>
-      <span class="hunger-summary-pct" id="hungerSummaryPct">--</span>
+      <div class="hunger-summary-top">
+        <span class="hunger-summary-label">Eaten when hungry</span>
+        <span class="hunger-summary-pct" id="hungerSummaryPct">--</span>
+      </div>
+      <div class="hunger-bar-wrap">
+        <div class="hunger-bar-marker">
+          <span class="hunger-bar-marker-label">75% goal</span>
+          <div class="hunger-bar-marker-line"></div>
+        </div>
+        <div class="hunger-bar-track"><div class="hunger-bar-fill" id="hungerBarFill" style="width:0%"></div></div>
+      </div>
+      <div class="hunger-hint" id="hungerHint"></div>
     </div>
 
     <div class="today-feed" id="todayFeed"></div>
@@ -1033,7 +1075,11 @@ async function renderToday(){
     const hungry=withHunger.filter(m=>m.hunger>=2).length;
     const pct=Math.round((hungry/withHunger.length)*100);
     document.getElementById('hungerSummaryPct').textContent=pct+'%';
-    summaryEl.style.display='flex';
+    document.getElementById('hungerBarFill').style.width=pct+'%';
+    const goal=75;
+    document.getElementById('hungerHint').textContent=
+      pct>=goal?'You\u2019ve hit your goal \u2713':((goal-pct)+'% away from your goal');
+    summaryEl.style.display='block';
   }else{
     summaryEl.style.display='none';
   }
