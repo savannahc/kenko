@@ -580,7 +580,7 @@ header h1{
     <div class="settings-view">
       <h2>Settings</h2>
       <div class="setting-item" id="accountItem">
-        <span id="accountLabel">Sign in to sync across devices</span>
+        <div id="accountLabel" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">Sign in to sync across devices</div>
         <button id="authBtn">Sign in</button>
       </div>
       <div class="setting-item">
@@ -790,16 +790,18 @@ function updateAuthUI(){
   const label = document.getElementById('accountLabel');
   const btn = document.getElementById('authBtn');
   if(currentUser){
-    const name = currentUser.displayName || currentUser.email;
+    const name = currentUser.displayName || currentUser.email || 'Signed in';
     const photo = currentUser.photoURL;
-    label.innerHTML = (photo ? `<img class="account-avatar" src="${photo}" alt="">` : '') +
-      `<div class="account-info"><div><span class="account-name">${esc(name)}</span>` +
-      `<span class="account-email">${esc(currentUser.email||'')}</span>` +
-      `<span class="sync-badge">synced</span></div></div>`;
+    label.innerHTML =
+      (photo ? `<img class="account-avatar" src="${photo}" alt="">` : '') +
+      `<div style="min-width:0">
+        <div class="account-name">${esc(name)}</div>
+        <div class="account-email">${esc(currentUser.email||'')}</div>
+        <span class="sync-badge">synced</span>
+      </div>`;
     btn.textContent = 'Sign out';
-    btn.classList.remove('danger');
   } else {
-    label.textContent = 'Sign in to sync across devices';
+    label.innerHTML = 'Sign in to sync across devices';
     btn.textContent = 'Sign in';
   }
 }
