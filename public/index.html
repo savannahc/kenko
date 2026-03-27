@@ -811,7 +811,17 @@ async function handleAuth(){
     await firebase.auth().signOut();
   } else {
     const provider = new firebase.auth.GoogleAuthProvider();
-    await firebase.auth().signInWithRedirect(provider);
+    try {
+      await firebase.auth().signInWithPopup(provider);
+    } catch(e) {
+      // Fallback for contexts where popups are blocked (e.g. PWA)
+      if(e.code==='auth/popup-blocked'){
+        await firebase.auth().signInWithRedirect(provider);
+      } else {
+        console.error('Sign-in error',e);
+        document.getElementById('accountLabel').innerHTML='Sign-in failed: '+esc(e.message);
+      }
+    }
   }
 }
 
@@ -1465,16 +1475,8 @@ async function migrateDates(){
   await migrateDates();
 
   if(firebase.auth){
-    try{
-      const result = await firebase.auth().getRedirectResult();
-      if(result&&result.user) console.log('Redirect sign-in OK',result.user.email);
-    }catch(e){
-      console.warn('Redirect result error',e);
-      document.getElementById('accountLabel').innerHTML='Auth error: '+e.code;
-    }
     firebase.auth().onAuthStateChanged(async(user)=>{
       currentUser=user;
-      console.log('Auth state:',user?user.email:'signed out');
       updateAuthUI();
       if(user){
         try{ await migrateLocalToCloud() }catch(e){ console.warn('Migration failed',e) }
