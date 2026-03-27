@@ -1463,6 +1463,7 @@ async function migrateDates(){
   await migrateDates();
 
   if(firebase.auth){
+    try{ await firebase.auth().getRedirectResult() }catch(e){ console.warn('Redirect result',e) }
     firebase.auth().onAuthStateChanged(async(user)=>{
       currentUser=user;
       updateAuthUI();
