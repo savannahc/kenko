@@ -3,6 +3,7 @@ import { FeedHeader } from './components/FeedHeader'
 import { FeedCard } from './components/FeedCard'
 import { EmptyState } from './components/EmptyState'
 import { ReaderView } from './components/ReaderView'
+import { InstallPrompt } from './components/InstallPrompt'
 
 function App() {
   const {
@@ -49,6 +50,8 @@ function App() {
           </div>
         )}
       </main>
+
+      <InstallPrompt />
 
       {selectedArticle && (
         <ReaderView
