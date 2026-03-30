@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { getMessages, getMessage } from './lib/gmail'
+import { extractContent, assignArticleColors } from './lib/extract-content'
 
 function parseCookies(cookieHeader: string): Record<string, string> {
   const cookies: Record<string, string> = {}
@@ -28,24 +29,26 @@ function formatDate(dateStr: string): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function estimateReadTime(text: string): string {
-  const words = text.split(/\s+/).length
-  const minutes = Math.max(1, Math.ceil(words / 250))
-  return `${minutes} min`
-}
-
-function extractBody(payload: any): string {
+function extractHtmlBody(payload: any): string {
   if (payload.body?.data) {
     return Buffer.from(payload.body.data, 'base64url').toString('utf-8')
   }
   if (payload.parts) {
+    // Prefer HTML
+    for (const part of payload.parts) {
+      if (part.mimeType === 'text/html' && part.body?.data) {
+        return Buffer.from(part.body.data, 'base64url').toString('utf-8')
+      }
+    }
+    // Fall back to plain text
     for (const part of payload.parts) {
       if (part.mimeType === 'text/plain' && part.body?.data) {
         return Buffer.from(part.body.data, 'base64url').toString('utf-8')
       }
     }
+    // Recurse into nested parts
     for (const part of payload.parts) {
-      const nested = extractBody(part)
+      const nested = extractHtmlBody(part)
       if (nested) return nested
     }
   }
@@ -73,8 +76,9 @@ export default async function GET(req: VercelRequest, res: VercelResponse) {
         const from = getHeader(headers, 'From')
         const date = getHeader(headers, 'Date')
         const { source, author } = parseFrom(from)
-        const body = extractBody(full.payload)
-        const paragraphs = body.split(/\n\n+/).map((p: string) => p.trim()).filter(Boolean)
+        const body = extractHtmlBody(full.payload)
+        const { paragraphs, summary, readTime } = extractContent(body)
+        const { heroColor, accentColor } = assignArticleColors(source)
 
         return {
           id: msg.id,
@@ -82,14 +86,14 @@ export default async function GET(req: VercelRequest, res: VercelResponse) {
           author,
           date: formatDate(date),
           receivedAt: new Date(date).toISOString(),
-          readTime: estimateReadTime(body),
+          readTime,
           category: 'Uncategorized',
           title: subject,
-          summary: paragraphs[0]?.slice(0, 200) || '',
+          summary,
           content: paragraphs,
           gmailMessageId: msg.id,
-          heroColor: '#1a1a2e',
-          accentColor: '#e94560',
+          heroColor,
+          accentColor,
         }
       })
     )
