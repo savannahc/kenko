@@ -2,6 +2,7 @@ import { useArticleState } from './hooks/useArticleState'
 import { FeedHeader } from './components/FeedHeader'
 import { FeedCard } from './components/FeedCard'
 import { EmptyState } from './components/EmptyState'
+import { ReaderView } from './components/ReaderView'
 
 function App() {
   const {
@@ -13,7 +14,7 @@ function App() {
     setActiveViewTab,
     activeCategory,
     setActiveCategory,
-    // selectedArticle used in next iteration (ReaderView)
+    selectedArticle,
     selectArticle,
   } = useArticleState()
 
@@ -46,6 +47,15 @@ function App() {
           </div>
         )}
       </main>
+
+      {selectedArticle && (
+        <ReaderView
+          article={selectedArticle}
+          isRead={isRead(selectedArticle.id)}
+          onClose={() => selectArticle(null)}
+          onToggleRead={(read) => toggleRead(selectedArticle.id, read)}
+        />
+      )}
     </div>
   )
 }
