@@ -1,14 +1,54 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import type { Article, ViewTab, Category } from '../types/article'
 import { SAMPLE_ARTICLES } from '../lib/sample-data'
+import * as api from '../lib/api'
 
 export function useArticleState() {
-  const [articles] = useState<Article[]>(SAMPLE_ARTICLES)
+  const [articles, setArticles] = useState<Article[]>(SAMPLE_ARTICLES)
   const [readIds, setReadIds] = useState<Set<string>>(new Set())
   const [archivedIds, setArchivedIds] = useState<Set<string>>(new Set())
   const [activeViewTab, setActiveViewTab] = useState<ViewTab>('Unread')
   const [activeCategory, setActiveCategory] = useState<Category>('All')
   const [selectedArticle, selectArticle] = useState<Article | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  const loadArticles = useCallback(async () => {
+    try {
+      const status = await api.checkAuthStatus()
+      setIsAuthenticated(status.authenticated)
+      if (status.authenticated) {
+        setLoading(true)
+        const fetched = await api.fetchArticles()
+        if (fetched.length > 0) {
+          setArticles(fetched)
+        }
+        setLoading(false)
+      }
+    } catch {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadArticles()
+  }, [loadArticles])
+
+  const refresh = useCallback(async () => {
+    setLoading(true)
+    try {
+      if (isAuthenticated) {
+        const fetched = await api.fetchArticles()
+        if (fetched.length > 0) {
+          setArticles(fetched)
+        }
+      }
+    } catch {
+      // Keep existing data
+    } finally {
+      setLoading(false)
+    }
+  }, [isAuthenticated])
 
   const filteredArticles = useMemo(() => {
     return articles.filter(a => {
@@ -36,7 +76,13 @@ export function useArticleState() {
 
   const archiveArticle = useCallback((id: string) => {
     setArchivedIds(prev => new Set(prev).add(id))
-  }, [])
+    if (isAuthenticated) {
+      const article = articles.find(a => a.id === id)
+      if (article?.gmailMessageId) {
+        api.archiveArticle(article.gmailMessageId, article.gmailMessageId)
+      }
+    }
+  }, [isAuthenticated, articles])
 
   return {
     filteredArticles,
@@ -50,5 +96,8 @@ export function useArticleState() {
     setActiveCategory,
     selectedArticle,
     selectArticle,
+    loading,
+    isAuthenticated,
+    refresh,
   }
 }

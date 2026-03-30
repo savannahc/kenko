@@ -4,8 +4,10 @@ import { FeedCard } from './components/FeedCard'
 import { EmptyState } from './components/EmptyState'
 import { ReaderView } from './components/ReaderView'
 import { InstallPrompt } from './components/InstallPrompt'
+import { AuthGate } from './components/AuthGate'
+import { LoadingSkeleton } from './components/LoadingSkeleton'
 
-function App() {
+function AppContent() {
   const {
     filteredArticles,
     unreadCount,
@@ -18,6 +20,8 @@ function App() {
     setActiveCategory,
     selectedArticle,
     selectArticle,
+    loading,
+    refresh,
   } = useArticleState()
 
   return (
@@ -28,10 +32,14 @@ function App() {
         activeCategory={activeCategory}
         onTabChange={setActiveViewTab}
         onCategoryChange={setActiveCategory}
+        onRefresh={refresh}
+        loading={loading}
       />
 
       <main style={{ padding: '8px 16px 32px' }}>
-        {filteredArticles.length === 0 ? (
+        {loading ? (
+          <LoadingSkeleton />
+        ) : filteredArticles.length === 0 ? (
           <EmptyState viewTab={activeViewTab} />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -63,6 +71,14 @@ function App() {
         />
       )}
     </div>
+  )
+}
+
+function App() {
+  return (
+    <AuthGate>
+      <AppContent />
+    </AuthGate>
   )
 }
 
