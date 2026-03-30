@@ -10,6 +10,7 @@ function App() {
     unreadCount,
     isRead,
     toggleRead,
+    archiveArticle,
     activeViewTab,
     setActiveViewTab,
     activeCategory,
@@ -41,6 +42,7 @@ function App() {
                 index={index}
                 onClick={() => selectArticle(article)}
                 onToggleRead={(read) => toggleRead(article.id, read)}
+                onArchive={() => archiveArticle(article.id)}
                 shouldAnimateOut={activeViewTab === 'Unread'}
               />
             ))}
@@ -54,6 +56,7 @@ function App() {
           isRead={isRead(selectedArticle.id)}
           onClose={() => selectArticle(null)}
           onToggleRead={(read) => toggleRead(selectedArticle.id, read)}
+          onArchive={() => archiveArticle(selectedArticle.id)}
         />
       )}
     </div>

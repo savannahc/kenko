@@ -7,9 +7,10 @@ interface ReaderViewProps {
   isRead: boolean
   onClose: () => void
   onToggleRead: (read: boolean) => void
+  onArchive: () => void
 }
 
-export function ReaderView({ article, isRead, onClose, onToggleRead }: ReaderViewProps) {
+export function ReaderView({ article, isRead, onClose, onToggleRead, onArchive }: ReaderViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [headerOpacity, setHeaderOpacity] = useState(0)
   const [visible, setVisible] = useState(false)
@@ -252,6 +253,7 @@ export function ReaderView({ article, isRead, onClose, onToggleRead }: ReaderVie
             {['Archive', 'Share', 'Open in Gmail'].map(label => (
               <button
                 key={label}
+                onClick={label === 'Archive' ? () => { onArchive(); onClose() } : undefined}
                 style={{
                   flex: 1,
                   padding: '10px 0',
