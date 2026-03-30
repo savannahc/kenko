@@ -30,7 +30,7 @@ export function ReaderView({ article, isRead, onClose, onToggleRead }: ReaderVie
 
   const handleClose = () => {
     setVisible(false)
-    setTimeout(onClose, 250)
+    onClose()
   }
 
   return (
@@ -174,15 +174,22 @@ export function ReaderView({ article, isRead, onClose, onToggleRead }: ReaderVie
               {article.summary}
             </p>
 
-            <span
+            <div
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
                 fontSize: 12,
                 color: 'rgba(255,255,255,0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0,
               }}
             >
-              {article.author} · {article.date} · {article.readTime}
-            </span>
+              <span>{article.author}</span>
+              <span style={{ margin: '0 6px' }}>·</span>
+              <span>{article.date}</span>
+              <span style={{ margin: '0 6px' }}>·</span>
+              <span>{article.readTime}</span>
+            </div>
           </div>
         </div>
 
