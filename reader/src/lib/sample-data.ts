@@ -9,8 +9,8 @@ export const SAMPLE_ARTICLES: Article[] = [
     receivedAt: '2026-03-28T14:00:00Z',
     readTime: '8 min',
     category: 'Tech',
-    title: 'The Great App Store Reckoning',
-    summary: 'Apple and Google face mounting pressure from regulators worldwide as new legislation threatens to upend the mobile duopoly for good.',
+    title: 'The AI Agent Wars Have Officially Begun',
+    summary: 'Every major tech company is now racing to build autonomous AI agents, and the battle lines are being drawn in ways that will reshape the entire industry.',
     content: [
       'For more than a decade, Apple and Google have maintained an iron grip on mobile software distribution. The App Store and Google Play became the default gateways through which billions of people access the internet, and the 30 percent commission that both companies charge developers became one of the most reliable revenue streams in the history of technology.',
       'That era is coming to an end. This week, the European Commission announced its latest enforcement action under the Digital Markets Act, ordering both companies to allow third-party app stores on their platforms with no restrictions on payment processing. The fines for noncompliance would start at 10 percent of global revenue — a figure that, for Apple, would exceed $39 billion.',
@@ -32,8 +32,8 @@ export const SAMPLE_ARTICLES: Article[] = [
     receivedAt: '2026-03-27T18:30:00Z',
     readTime: '11 min',
     category: 'Finance',
-    title: 'The Synthetic CDO Renaissance',
-    summary: 'Wall Street is once again packaging risk into complex instruments, but this time the underlying assets are even stranger than subprime mortgages.',
+    title: 'The Tokenized Treasury Market Is Getting Weird',
+    summary: 'Wall Street is tokenizing U.S. Treasuries on blockchains at a rapid clip, and the resulting market structure is stranger than anyone predicted.',
     content: [
       'There is a thing that happens on Wall Street every fifteen years or so where someone invents a new way to package risk, everyone gets very excited about it, and then it blows up. We are currently in the "everyone gets very excited" phase of the latest cycle, and the instruments in question are synthetic collateralized debt obligations referencing portfolios of private credit loans.',
       'If that sentence made you nervous, congratulations, you have a functioning memory. Synthetic CDOs were, of course, central to the 2008 financial crisis. The basic idea is that instead of buying actual loans and pooling them together, you use credit default swaps to create a synthetic exposure to a reference portfolio. This lets you create leveraged bets on credit risk without anyone having to actually lend money to anyone.',

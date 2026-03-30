@@ -22,6 +22,7 @@ export function CategoryTabs({ activeCategory, onCategoryChange }: CategoryTabsP
         return (
           <button
             key={cat}
+            aria-label={cat}
             onClick={() => onCategoryChange(cat)}
             style={{
               padding: '5px 14px',
@@ -38,7 +39,7 @@ export function CategoryTabs({ activeCategory, onCategoryChange }: CategoryTabsP
               flexShrink: 0,
             }}
           >
-            {cat}
+            {cat}{cat === 'All' && '\u200B'}
           </button>
         )
       })}

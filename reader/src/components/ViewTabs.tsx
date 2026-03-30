@@ -9,6 +9,7 @@ interface ViewTabsProps {
 export function ViewTabs({ activeTab, unreadCount, onTabChange }: ViewTabsProps) {
   return (
     <div
+      role="tablist"
       style={{
         display: 'inline-flex',
         background: '#e4e0db',
@@ -20,6 +21,8 @@ export function ViewTabs({ activeTab, unreadCount, onTabChange }: ViewTabsProps)
       {(['Unread', 'All'] as const).map(tab => (
         <button
           key={tab}
+          role="tab"
+          aria-selected={activeTab === tab}
           onClick={() => onTabChange(tab)}
           style={{
             padding: '6px 18px',
