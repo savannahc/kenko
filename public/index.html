@@ -784,8 +784,25 @@ async function migrateLocalToCloud(){
     }
     await batch.commit();
   }
-  await dbClear();
+  // Keep local data as a cache — don't clear IndexedDB.
+  // This prevents data loss if the user's auth session expires
+  // or if they open the app before Firebase auth resolves.
   showToast('Data synced to cloud','tick.svg');
+}
+
+/* Hydrate local IndexedDB from cloud for offline access */
+async function hydrateLocalFromCloud(){
+  const cloud = await cloudRange('0000-00-00','9999-99-99');
+  if(!cloud.length) return;
+  const local = await dbRange('0000-00-00','9999-99-99');
+  const localTimes = new Set(local.map(m=>m.time));
+  for(const meal of cloud){
+    // Only add meals not already in local DB (by timestamp)
+    if(!localTimes.has(meal.time)){
+      const {id, ...data} = meal;
+      await dbAdd(data);
+    }
+  }
 }
 
 /* Auth UI */
@@ -1483,6 +1500,7 @@ async function migrateDates(){
       updateAuthUI();
       if(user){
         try{ await migrateLocalToCloud() }catch(e){ console.warn('Migration failed',e) }
+        try{ await hydrateLocalFromCloud() }catch(e){ console.warn('Hydrate failed',e) }
       }
       renderToday();
     });
